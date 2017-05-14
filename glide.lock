@@ -1,5 +1,5 @@
-hash: c68e5ffdcaf49a7bc78d3a57e357728410c9a87b43e3631f2217775b1d7f7f53
-updated: 2017-05-14T20:17:12.25965016+02:00
+hash: 55917776c269627367b64701362e317633182ad617fa3af65e22de0e8c7114bb
+updated: 2017-05-14T20:51:51.014333006+02:00
 imports:
 - name: github.com/gedex/inflector
   version: 16278e9db8130ac7ec405dc174cfb94344f16325
@@ -13,7 +13,9 @@ imports:
   subpackages:
   - proto
 - name: github.com/jinzhu/gorm
-  version: 9acaa33324bbcc78239a1c913d4f1292c12177b9
+  version: 5174cc5c242a728b435ea2be8a2f7f998e15429b
+  subpackages:
+  - dialects/sqlite
 - name: github.com/jinzhu/inflection
   version: 1c35d901db3da928c72a72d8458480cc9ade058f
 - name: github.com/julienschmidt/httprouter
@@ -23,9 +25,6 @@ imports:
 - name: github.com/manyminds/api2go
   version: dc368bb579c1a582faed50768e7fbcc463954c89
   subpackages:
-  - examples/model
-  - examples/resource
-  - examples/storage
   - jsonapi
   - routing
 - name: github.com/manyminds/api2go-adapter
@@ -34,6 +33,8 @@ imports:
   - gingonic
 - name: github.com/mattn/go-isatty
   version: fc9e8d8ef48496124e79ae0df75490096eccf6fe
+- name: github.com/mattn/go-sqlite3
+  version: cf7286f069c3ef596efcc87781a4653a2e7607bd
 - name: golang.org/x/net
   version: f315505cf3349909cdf013ea56690da34e96a451
   subpackages:
@@ -48,4 +49,4 @@ imports:
   version: c193cecd124b5cc722d7ee5538e945bdb3348435
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
-devImports: []
+testImports: []

@@ -1,12 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
-	"github.com/gin-gonic/gin"
-    "github.com/manyminds/api2go"
-    "github.com/manyminds/api2go-adapter/gingonic"
 	"github.com/fetzi/styx/config"
+	"github.com/fetzi/styx/storage"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/manyminds/api2go"
+	"github.com/manyminds/api2go-adapter/gingonic"
+	gin "gopkg.in/gin-gonic/gin.v1"
 )
 
 func main() {
@@ -26,9 +30,12 @@ func main() {
 	router := gin.Default()
 	api := api2go.NewAPIWithRouting(
 		"api",
-		api2Go.NewStaticResolver("/"),
-		gingonic.New(router)
+		api2go.NewStaticResolver("/"),
+		gingonic.New(router),
 	)
 
-	mailStatusStorage = storage.NewMailStatusStorage()
+	mailStatusStorage := storage.NewMailStatusStorage(db)
+
+	fmt.Printf("%v", api)
+	fmt.Printf("%v", mailStatusStorage)
 }

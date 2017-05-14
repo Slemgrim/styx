@@ -20,15 +20,17 @@ func NewMailStatusStorage(db *gorm.DB) MailStatusStorage {
 		fmt.Println("creating table MailStatus")
 
 		db.CreateTable(table)
-
-		return &MailStatusStorage{db}
 	}
+
+	return MailStatusStorage{db}
 }
 
+// MailStorage tba
 type MailStorage struct {
 	MailStatusStorage MailStatusStorage
 }
 
+// NewMailStorage tba
 func NewMailStorage(mailStatusStorage MailStatusStorage) MailStorage {
-	return &MailStorage{mailStatusStorage}
+	return MailStorage{mailStatusStorage}
 }
