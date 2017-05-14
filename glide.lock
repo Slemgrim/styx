@@ -1,0 +1,51 @@
+hash: c68e5ffdcaf49a7bc78d3a57e357728410c9a87b43e3631f2217775b1d7f7f53
+updated: 2017-05-14T20:17:12.25965016+02:00
+imports:
+- name: github.com/gedex/inflector
+  version: 16278e9db8130ac7ec405dc174cfb94344f16325
+- name: github.com/gin-gonic/gin
+  version: d5b353c5d5a560322e6d96121c814115562501f7
+  subpackages:
+  - binding
+  - render
+- name: github.com/golang/protobuf
+  version: 2402d76f3d41f928c7902a765dfc872356dd3aad
+  subpackages:
+  - proto
+- name: github.com/jinzhu/gorm
+  version: 9acaa33324bbcc78239a1c913d4f1292c12177b9
+- name: github.com/jinzhu/inflection
+  version: 1c35d901db3da928c72a72d8458480cc9ade058f
+- name: github.com/julienschmidt/httprouter
+  version: 975b5c4c7c21c0e3d2764200bf2aa8e34657ae6e
+- name: github.com/manucorporat/sse
+  version: ee05b128a739a0fb76c7ebd3ae4810c1de808d6d
+- name: github.com/manyminds/api2go
+  version: dc368bb579c1a582faed50768e7fbcc463954c89
+  subpackages:
+  - examples/model
+  - examples/resource
+  - examples/storage
+  - jsonapi
+  - routing
+- name: github.com/manyminds/api2go-adapter
+  version: 84e19abf33747f08f7eda44aa7d293a29194380c
+  subpackages:
+  - gingonic
+- name: github.com/mattn/go-isatty
+  version: fc9e8d8ef48496124e79ae0df75490096eccf6fe
+- name: golang.org/x/net
+  version: f315505cf3349909cdf013ea56690da34e96a451
+  subpackages:
+  - context
+- name: golang.org/x/sys
+  version: f845067cf72a21fb4929b0e6a35273bd83b56396
+  subpackages:
+  - unix
+- name: gopkg.in/gin-gonic/gin.v1
+  version: e2212d40c62a98b388a5eb48ecbdcf88534688ba
+- name: gopkg.in/go-playground/validator.v8
+  version: c193cecd124b5cc722d7ee5538e945bdb3348435
+- name: gopkg.in/yaml.v2
+  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
+devImports: []

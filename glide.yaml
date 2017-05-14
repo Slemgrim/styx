@@ -1,0 +1,8 @@
+package: github.com/fetzi/styx
+import:
+- package: github.com/manyminds/api2go-adapter
+  subpackages:
+  - gingonic
+- package: github.com/manyminds/api2go
+- package: github.com/gin-gonic/gin
+- package: github.com/gedex/inflector
