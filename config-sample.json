@@ -1,0 +1,9 @@
+{
+    "http": {
+        "port": 9999
+    },
+    "storage": {
+        "driver": "sqlite3",
+        "config": "styx.sqlite"
+    }
+}
