@@ -15,13 +15,13 @@ Url: http://localhost:15672 - guest/guest
 
 Submit an E-Mail:
 
-POST: localhost:9999/api/mails
+POST: localhost:9999/api/mail
 
 Body:
 ```
 {
 	"data": {
-		"type": "mails",
+		"type": "mail",
 		"attributes": {
 			"context": "foo",
 			"subject": "test mail",
