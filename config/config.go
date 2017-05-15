@@ -9,6 +9,7 @@ import (
 type Config struct {
 	HTTP    HTTPConfig
 	Storage StorageConfig
+	Queue QueueConfig
 }
 
 // HTTPConfig defines the configration for the http api
@@ -20,6 +21,14 @@ type HTTPConfig struct {
 type StorageConfig struct {
 	Driver string
 	Config string
+}
+
+// QueueConfig defines the rabbit mq connection information
+type QueueConfig struct {
+	Host string
+	Port int
+	Username string
+	Password string
 }
 
 // ReadConfig reads the json configuration values into the Config Struct

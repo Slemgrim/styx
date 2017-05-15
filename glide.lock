@@ -1,5 +1,5 @@
-hash: 05af5a2cbcaa76a2506fa016921caedc5561f690999d84ac3bce0a04d6e62fb1
-updated: 2017-05-15T07:54:24.29885918+02:00
+hash: ebb05da16ac2af2a822e62c20763b018722dec1611b99935a3bc7b9d06887911
+updated: 2017-05-15T09:32:36.651569459+02:00
 imports:
 - name: github.com/gedex/inflector
   version: 16278e9db8130ac7ec405dc174cfb94344f16325
@@ -37,6 +37,8 @@ imports:
   version: fc9e8d8ef48496124e79ae0df75490096eccf6fe
 - name: github.com/mattn/go-sqlite3
   version: cf7286f069c3ef596efcc87781a4653a2e7607bd
+- name: github.com/streadway/amqp
+  version: 6063341da5df18c5abcb1f62373016ab9858b7b0
 - name: golang.org/x/net
   version: f315505cf3349909cdf013ea56690da34e96a451
   subpackages:

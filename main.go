@@ -25,9 +25,20 @@ func main() {
 
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	defer db.Close()
+
+	//queue, err := queue.NewConnection(config.Queue.Host, config.Queue.Port, config.Queue.Username, config.Queue.Password)
+
+	//if err != nil {
+	//	log.Fatal(err)
+	//	return
+	//}
+
+	//defer queue.Close()
+
 	router := gin.Default()
 	api := api2go.NewAPIWithRouting(
 		"api",
@@ -38,6 +49,7 @@ func main() {
 	mailStatusStorage := storage.NewMailStatusStorage(db)
 
 	api.AddResource(model.Mail{}, resource.MailResource{&mailStatusStorage})
+	api.AddResource(model.MailStatus{}, resource.MailStatusResource{&mailStatusStorage})
 
 	router.Run(":9999")
 }

@@ -25,6 +25,18 @@ func NewMailStatusStorage(db *gorm.DB) MailStatusStorage {
 	return MailStatusStorage{db}
 }
 
+// GetOne tba
+func (s MailStatusStorage) GetOne(id string) (model.MailStatus, error) {
+	mailStatus := model.MailStatus{}
+	s.db.Where("mail_id = ?", id).First(&mailStatus)
+
+	if mailStatus.MailID != "" {
+		return mailStatus, nil
+	}
+
+	return mailStatus, fmt.Errorf("Mail Status with id %s not found", id)
+}
+
 // MailStorage tba
 type MailStorage struct {
 	MailStatusStorage MailStatusStorage
@@ -35,7 +47,7 @@ func NewMailStorage(mailStatusStorage MailStatusStorage) MailStorage {
 	return MailStorage{mailStatusStorage}
 }
 
-func (s *MailStatusStorage) Insert (m model.MailStatus) string {
+func (s *MailStatusStorage) Insert(m model.MailStatus) string {
 	s.db.Create(&m)
 	return m.MailID
 }

@@ -14,3 +14,4 @@ import:
   - dialects/sqlite
 - package: github.com/google/uuid
   version: ^0.2.0
+- package: github.com/streadway/amqp
