@@ -24,6 +24,11 @@ type Body struct {
 	Plain string `json:"plain"`
 }
 
+// GetName gets the type identifier of the resource
+func (m Mail) GetName() string {
+	return "mail"
+}
+
 // GetID retrieves the identifier of the mail
 func (m Mail) GetID() string {
 	return m.ID
