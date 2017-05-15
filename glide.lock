@@ -1,5 +1,5 @@
-hash: 55917776c269627367b64701362e317633182ad617fa3af65e22de0e8c7114bb
-updated: 2017-05-14T20:51:51.014333006+02:00
+hash: 05af5a2cbcaa76a2506fa016921caedc5561f690999d84ac3bce0a04d6e62fb1
+updated: 2017-05-15T07:54:24.29885918+02:00
 imports:
 - name: github.com/gedex/inflector
   version: 16278e9db8130ac7ec405dc174cfb94344f16325
@@ -12,6 +12,8 @@ imports:
   version: 2402d76f3d41f928c7902a765dfc872356dd3aad
   subpackages:
   - proto
+- name: github.com/google/uuid
+  version: 064e2069ce9c359c118179501254f67d7d37ba24
 - name: github.com/jinzhu/gorm
   version: 5174cc5c242a728b435ea2be8a2f7f998e15429b
   subpackages:

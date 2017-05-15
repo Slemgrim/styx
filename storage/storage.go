@@ -34,3 +34,8 @@ type MailStorage struct {
 func NewMailStorage(mailStatusStorage MailStatusStorage) MailStorage {
 	return MailStorage{mailStatusStorage}
 }
+
+func (s *MailStatusStorage) Insert (m model.MailStatus) string {
+	s.db.Create(&m)
+	return m.MailID
+}

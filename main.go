@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/fetzi/styx/config"
+	"github.com/fetzi/styx/model"
+	"github.com/fetzi/styx/resource"
 	"github.com/fetzi/styx/storage"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -36,6 +37,7 @@ func main() {
 
 	mailStatusStorage := storage.NewMailStatusStorage(db)
 
-	fmt.Printf("%v", api)
-	fmt.Printf("%v", mailStatusStorage)
+	api.AddResource(model.Mail{}, resource.MailResource{&mailStatusStorage})
+
+	router.Run(":9999")
 }

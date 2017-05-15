@@ -12,3 +12,5 @@ import:
   version: ^1.0.0
   subpackages:
   - dialects/sqlite
+- package: github.com/google/uuid
+  version: ^0.2.0
