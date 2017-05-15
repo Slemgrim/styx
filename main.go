@@ -5,6 +5,7 @@ import (
 
 	"github.com/fetzi/styx/config"
 	"github.com/fetzi/styx/model"
+	"github.com/fetzi/styx/queue"
 	"github.com/fetzi/styx/resource"
 	"github.com/fetzi/styx/storage"
 	"github.com/jinzhu/gorm"
@@ -30,14 +31,14 @@ func main() {
 
 	defer db.Close()
 
-	//queue, err := queue.NewConnection(config.Queue.Host, config.Queue.Port, config.Queue.Username, config.Queue.Password)
+	queue, err := queue.NewConnection(config.Queue.Host, config.Queue.Port, config.Queue.Username, config.Queue.Password)
 
-	//if err != nil {
-	//	log.Fatal(err)
-	//	return
-	//}
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 
-	//defer queue.Close()
+	defer queue.Close()
 
 	router := gin.Default()
 	api := api2go.NewAPIWithRouting(
@@ -48,7 +49,7 @@ func main() {
 
 	mailStatusStorage := storage.NewMailStatusStorage(db)
 
-	api.AddResource(model.Mail{}, resource.MailResource{&mailStatusStorage})
+	api.AddResource(model.Mail{}, resource.MailResource{&mailStatusStorage, queue, config.Queue.QueueName})
 	api.AddResource(model.MailStatus{}, resource.MailStatusResource{&mailStatusStorage})
 
 	router.Run(":9999")
