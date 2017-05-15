@@ -56,7 +56,7 @@ func (s MailResource) Create(obj interface{}, r api2go.Request) (api2go.Responde
 
 	if err != nil {
 		log.Fatal(err)
-		//TODO: add return error
+		return &Response{}, api2go.NewHTTPError(errors.New("Unable to open queue channel"), "Unable to open queue channel", http.StatusInternalServerError)
 	}
 
 	defer channel.Close()
@@ -65,10 +65,14 @@ func (s MailResource) Create(obj interface{}, r api2go.Request) (api2go.Responde
 
 	if err != nil {
 		log.Fatal(err)
-		//TODO: add return error
+		return &Response{}, api2go.NewHTTPError(errors.New("Unable to declare queue "), "Unable to declare queue", http.StatusInternalServerError)
 	}
 
-	channel.PublishAsJSON(queue, mail)
+	err = channel.PublishAsJSON(queue, mail)
+
+	if err != nil {
+		return &Response{}, api2go.NewHTTPError(errors.New("Unable to publish e-mail to queue"), "Unable to publish e-mail to queue", http.StatusInternalServerError)
+	}
 
 	return &Response{Res: mailStatus, Code: http.StatusCreated}, nil
 }
