@@ -52,26 +52,10 @@ func (s MailResource) Create(obj interface{}, r api2go.Request) (api2go.Responde
 
 	s.MailStatusStorage.Insert(mailStatus)
 
-	channel, err := s.QueueConnection.Channel()
+	err := s.publishToQueue(mail)
 
 	if err != nil {
-		log.Fatal(err)
-		return &Response{}, api2go.NewHTTPError(errors.New("Unable to open queue channel"), "Unable to open queue channel", http.StatusInternalServerError)
-	}
-
-	defer channel.Close()
-
-	queue, err := channel.DeclareQueue(s.QueueName, false, false, false, false)
-
-	if err != nil {
-		log.Fatal(err)
-		return &Response{}, api2go.NewHTTPError(errors.New("Unable to declare queue "), "Unable to declare queue", http.StatusInternalServerError)
-	}
-
-	err = channel.PublishAsJSON(queue, mail)
-
-	if err != nil {
-		return &Response{}, api2go.NewHTTPError(errors.New("Unable to publish e-mail to queue"), "Unable to publish e-mail to queue", http.StatusInternalServerError)
+		return &Response{}, api2go.NewHTTPError(err, "Unable to publish mail entry queue", http.StatusInternalServerError)
 	}
 
 	return &Response{Res: mailStatus, Code: http.StatusCreated}, nil
@@ -87,4 +71,30 @@ func (s MailResource) Delete(id string, r api2go.Request) (api2go.Responder, err
 
 func (s MailResource) Update(obj interface{}, r api2go.Request) (api2go.Responder, error) {
 	return &Response{}, api2go.NewHTTPError(errors.New("update not allowed"), "update not allowed", http.StatusBadRequest)
+}
+
+func (s MailResource) publishToQueue(mail model.Mail) error {
+	channel, err := s.QueueConnection.Channel()
+
+	if err != nil {
+		log.Fatal(err)
+		return errors.New("Unable to open queue channel")
+	}
+
+	defer channel.Close()
+
+	queue, err := channel.DeclareQueue(s.QueueName, false, false, false, false)
+
+	if err != nil {
+		log.Fatal(err)
+		return errors.New("Unable to declare queue")
+	}
+
+	err = channel.PublishAsJSON(queue, mail)
+
+	if err != nil {
+		return errors.New("Unable to publish e-mail to queue")
+	}
+
+	return nil
 }
