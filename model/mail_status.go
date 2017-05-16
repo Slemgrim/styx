@@ -10,6 +10,7 @@ type MailStatus struct {
 	Sent    int64  `json:"sent_at"`
 }
 
+// GetName gets the type identifier of the resource
 func (m MailStatus) GetName() string {
 	return "mail-status"
 }

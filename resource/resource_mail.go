@@ -2,11 +2,13 @@ package resource
 
 import (
 	"errors"
+	"log"
 	"net/http"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/fetzi/styx/model"
+	"github.com/fetzi/styx/queue"
 	"github.com/fetzi/styx/storage"
 	"github.com/google/uuid"
 	"github.com/manyminds/api2go"
@@ -14,6 +16,8 @@ import (
 
 type MailResource struct {
 	MailStatusStorage *storage.MailStatusStorage
+	QueueConnection   *queue.Connection
+	QueueName         string
 }
 
 func (s MailResource) Create(obj interface{}, r api2go.Request) (api2go.Responder, error) {
@@ -26,27 +30,33 @@ func (s MailResource) Create(obj interface{}, r api2go.Request) (api2go.Responde
 	mail.ID = uuid.New().String()
 
 	var from []string
-	var to [] string
+	var to []string
 
 	for _, client := range mail.Clients {
 		switch client.Type {
-			case "to":
-				to = append(to, client.Email)
-			case "from":
-				from = append(from, client.Email)
+		case "to":
+			to = append(to, client.Email)
+		case "from":
+			from = append(from, client.Email)
 		}
 	}
 
 	mailStatus := model.MailStatus{
-		MailID: mail.ID,
+		MailID:  mail.ID,
 		Subject: mail.Subject,
-		From: strings.Join(from, ", "),
-		To: strings.Join(to, ", "),
+		From:    strings.Join(from, ", "),
+		To:      strings.Join(to, ", "),
 		Created: time.Now().Unix(),
-		Sent: 0,
+		Sent:    0,
 	}
 
 	s.MailStatusStorage.Insert(mailStatus)
+
+	err := s.publishToQueue(mail)
+
+	if err != nil {
+		return &Response{}, api2go.NewHTTPError(err, "Unable to publish mail entry queue", http.StatusInternalServerError)
+	}
 
 	return &Response{Res: mailStatus, Code: http.StatusCreated}, nil
 }
@@ -61,4 +71,30 @@ func (s MailResource) Delete(id string, r api2go.Request) (api2go.Responder, err
 
 func (s MailResource) Update(obj interface{}, r api2go.Request) (api2go.Responder, error) {
 	return &Response{}, api2go.NewHTTPError(errors.New("update not allowed"), "update not allowed", http.StatusBadRequest)
+}
+
+func (s MailResource) publishToQueue(mail model.Mail) error {
+	channel, err := s.QueueConnection.Channel()
+
+	if err != nil {
+		log.Fatal(err)
+		return errors.New("Unable to open queue channel")
+	}
+
+	defer channel.Close()
+
+	queue, err := channel.DeclareQueue(s.QueueName, false, false, false, false)
+
+	if err != nil {
+		log.Fatal(err)
+		return errors.New("Unable to declare queue")
+	}
+
+	err = channel.PublishAsJSON(queue, mail)
+
+	if err != nil {
+		return errors.New("Unable to publish e-mail to queue")
+	}
+
+	return nil
 }
