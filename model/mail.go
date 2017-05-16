@@ -11,11 +11,23 @@ type Mail struct {
 	Attachments []string `json:"attachments"`
 }
 
+// ClientType defines different available mail headers associated with email addresses
+type ClientType string
+
+const (
+	CLIENT_TO ClientType = "To"
+	CLIENT_FROM ClientType = "From"
+	CLIENT_BC ClientType = "Bc"
+	CLIENT_BCC ClientType = "Bcc"
+	CLIENT_REPLY_TO ClientType = "Reply-To"
+	CLIENT_RETURN_PATH ClientType = "Return-Path"
+)
+
 // Client defines the client structure
 type Client struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
-	Type  string `json:"type"`
+	Type  ClientType `json:"type"`
 }
 
 // Body defines the html and plain text fields
