@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/fetzi/styx/config"
@@ -53,5 +54,5 @@ func main() {
 	api.AddResource(model.Mail{}, resource.MailResource{&mailStatusStorage, queue, config.Queue.QueueName})
 	api.AddResource(model.MailStatus{}, resource.MailStatusResource{&mailStatusStorage})
 
-	router.Run(":9999")
+	router.Run(fmt.Sprintf(":%d", config.HTTP.Port))
 }
