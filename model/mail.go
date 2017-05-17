@@ -17,7 +17,7 @@ type ClientType string
 const (
 	CLIENT_TO ClientType = "To"
 	CLIENT_FROM ClientType = "From"
-	CLIENT_BC ClientType = "Bc"
+	CLIENT_CC ClientType = "Cc"
 	CLIENT_BCC ClientType = "Bcc"
 	CLIENT_REPLY_TO ClientType = "Reply-To"
 	CLIENT_RETURN_PATH ClientType = "Return-Path"
