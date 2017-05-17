@@ -12,6 +12,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/manyminds/api2go"
 	"github.com/manyminds/api2go-adapter/gingonic"
 	gin "gopkg.in/gin-gonic/gin.v1"
@@ -44,7 +45,7 @@ func main() {
 
 	router := gin.Default()
 	api := api2go.NewAPIWithRouting(
-		"api",
+		"",
 		api2go.NewStaticResolver("/"),
 		gingonic.New(router),
 	)
@@ -52,7 +53,6 @@ func main() {
 	mailStatusStorage := storage.NewMailStatusStorage(db)
 
 	api.AddResource(model.Mail{}, resource.MailResource{&mailStatusStorage, queue, config.Queue.QueueName})
-	api.AddResource(model.MailStatus{}, resource.MailStatusResource{&mailStatusStorage})
 
 	router.Run(fmt.Sprintf(":%d", config.HTTP.Port))
 }
