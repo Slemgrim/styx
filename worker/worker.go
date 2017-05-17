@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -52,9 +53,11 @@ func (worker *QueueWorker) Start() {
 		return
 	}
 
+	defer channel.Close()
+
 	go func() {
 		<-signals
-		channel.Close()
+		fmt.Println("recieved shutdown signal")
 		done <- true
 	}()
 
@@ -65,6 +68,7 @@ func (worker *QueueWorker) Start() {
 		return
 	}
 
+	channel.Prefetch(20)
 	channel.Consume(q, "styx-consumer", MailConsumer{
 		channel: queueToSMTP,
 		Mailer: worker.Mailer,
@@ -72,6 +76,7 @@ func (worker *QueueWorker) Start() {
 
 	// wait for signal
 	<-done
+	fmt.Println("worker shutdown complete")
 }
 
 func (c MailConsumer) Execute(message queue.Message) {

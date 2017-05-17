@@ -45,7 +45,7 @@ func main() {
 
 	router := gin.Default()
 	api := api2go.NewAPIWithRouting(
-		"api",
+		"",
 		api2go.NewStaticResolver("/"),
 		gingonic.New(router),
 	)
@@ -53,7 +53,6 @@ func main() {
 	mailStatusStorage := storage.NewMailStatusStorage(db)
 
 	api.AddResource(model.Mail{}, resource.MailResource{&mailStatusStorage, queue, config.Queue.QueueName})
-	api.AddResource(model.MailStatus{}, resource.MailStatusResource{&mailStatusStorage})
 
 	fmt.Println("Dero")
 	router.Run(fmt.Sprintf(":%d", config.HTTP.Port))

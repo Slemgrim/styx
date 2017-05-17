@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"github.com/fetzi/styx/config"
 	"github.com/fetzi/styx/queue"
@@ -13,6 +14,7 @@ import (
 )
 
 func main() {
+	fmt.Println("starting styx worker")
 	config, err := config.ReadConfig("config.json")
 
 	if err != nil {

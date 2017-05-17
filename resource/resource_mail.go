@@ -62,7 +62,13 @@ func (s MailResource) Create(obj interface{}, r api2go.Request) (api2go.Responde
 }
 
 func (s MailResource) FindOne(ID string, r api2go.Request) (api2go.Responder, error) {
-	return &Response{}, api2go.NewHTTPError(errors.New("find one not allowed"), "find one not allowed", http.StatusBadRequest)
+	mailStatus, err := s.MailStatusStorage.GetOne(ID)
+
+	if err != nil {
+		return &Response{}, api2go.NewHTTPError(err, "not found", http.StatusNotFound)
+	}
+
+	return &Response{Res: mailStatus, Code: http.StatusOK}, nil
 }
 
 func (s MailResource) Delete(id string, r api2go.Request) (api2go.Responder, error) {
