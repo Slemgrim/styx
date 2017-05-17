@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -9,8 +10,6 @@ import (
 	"github.com/fetzi/styx/model"
 	"github.com/fetzi/styx/queue"
 	"github.com/jinzhu/gorm"
-	"github.com/fetzi/styx/mailer"
-	"fmt"
 )
 
 // QueueWorker defines the queue specific information
@@ -18,22 +17,19 @@ type QueueWorker struct {
 	Database        *gorm.DB
 	QueueConnection *queue.Connection
 	QueueName       string
-	Mailer          *mailer.Mailer
 }
 
 type MailConsumer struct {
 	channel chan model.Mail
 	queue.MessageCallback
-	Mailer  *mailer.Mailer
 }
 
 // NewQueueWorker creates a new queue worker instance
-func NewQueueWorker(database *gorm.DB, queueConnection *queue.Connection, queueName string, mailer *mailer.Mailer) *QueueWorker {
+func NewQueueWorker(database *gorm.DB, queueConnection *queue.Connection, queueName string) *QueueWorker {
 	return &QueueWorker{
 		database,
 		queueConnection,
 		queueName,
-		mailer,
 	}
 }
 
@@ -53,9 +49,11 @@ func (worker *QueueWorker) Start() {
 		return
 	}
 
+	defer channel.Close()
+
 	go func() {
 		<-signals
-		channel.Close()
+		fmt.Println("recieved shutdown signal")
 		done <- true
 	}()
 
@@ -66,27 +64,20 @@ func (worker *QueueWorker) Start() {
 		return
 	}
 
-	channel.Consume(q, "styx-consumer", MailConsumer{
-		channel: queueToSMTP,
-		Mailer: worker.Mailer,
-	})
+	channel.Prefetch(20)
+	channel.Consume(q, "styx-consumer", MailConsumer{channel: queueToSMTP})
 
 	// wait for signal
 	<-done
+	fmt.Println("worker shutdown complete")
 }
 
 func (c MailConsumer) Execute(message queue.Message) {
 	mail := model.Mail{}
 	message.ParseFromJSON(&mail)
 
-	fmt.Println(mail)
-
-	err := c.Mailer.Send(mail)
-	if err != nil {
-		//Todo
-		panic(err)
-		return
-	}
+	//c.channel <- mail
+	fmt.Printf("%+v\n", mail)
 
 	message.Acknowledge()
 }

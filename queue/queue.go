@@ -98,6 +98,11 @@ func (c *Channel) PublishAsJSON(queue *Queue, data interface{}) error {
 	return c.Publish(queue, string(jsonData), "application/json")
 }
 
+// Prefetch defines the number of messages that get prefetched over the channel
+func (c *Channel) Prefetch(numberOfMessages int) {
+	c.Instance.Qos(numberOfMessages, 0, false)
+}
+
 // Consume consumes messages from the given queue
 func (c *Channel) Consume(queue *Queue, consumerName string, callback MessageCallback) error {
 	deliveries, err := c.Instance.Consume(
