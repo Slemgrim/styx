@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -10,6 +9,7 @@ import (
 	"github.com/fetzi/styx/model"
 	"github.com/fetzi/styx/queue"
 	"github.com/jinzhu/gorm"
+	"github.com/fetzi/styx/mailer"
 )
 
 // QueueWorker defines the queue specific information
@@ -17,19 +17,22 @@ type QueueWorker struct {
 	Database        *gorm.DB
 	QueueConnection *queue.Connection
 	QueueName       string
+	Mailer          *mailer.Mailer
 }
 
 type MailConsumer struct {
 	channel chan model.Mail
 	queue.MessageCallback
+	Mailer  *mailer.Mailer
 }
 
 // NewQueueWorker creates a new queue worker instance
-func NewQueueWorker(database *gorm.DB, queueConnection *queue.Connection, queueName string) *QueueWorker {
+func NewQueueWorker(database *gorm.DB, queueConnection *queue.Connection, queueName string, mailer *mailer.Mailer) *QueueWorker {
 	return &QueueWorker{
 		database,
 		queueConnection,
 		queueName,
+		mailer,
 	}
 }
 
@@ -62,7 +65,10 @@ func (worker *QueueWorker) Start() {
 		return
 	}
 
-	channel.Consume(q, "styx-consumer", MailConsumer{channel: queueToSMTP})
+	channel.Consume(q, "styx-consumer", MailConsumer{
+		channel: queueToSMTP,
+		Mailer: worker.Mailer,
+	})
 
 	// wait for signal
 	<-done
@@ -72,8 +78,11 @@ func (c MailConsumer) Execute(message queue.Message) {
 	mail := model.Mail{}
 	message.ParseFromJSON(&mail)
 
-	c.channel <- mail
-	fmt.Printf("%+v\n", mail)
+	err := c.Mailer.Send(mail)
+	if err != nil {
+		//Todo
+		return
+	}
 
 	message.Acknowledge()
 }

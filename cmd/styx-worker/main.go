@@ -2,13 +2,14 @@ package main
 
 import (
 	"log"
-
 	"github.com/fetzi/styx/config"
 	"github.com/fetzi/styx/queue"
 	"github.com/fetzi/styx/worker"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/fetzi/styx/mailer"
 )
 
 func main() {
@@ -36,7 +37,8 @@ func main() {
 
 	defer queue.Close()
 
-	worker := worker.NewQueueWorker(db, queue, config.Queue.QueueName)
+	mailer := mailer.NewMailer(config.SMTP)
+	worker := worker.NewQueueWorker(db, queue, config.Queue.QueueName, mailer)
 
 	worker.Start()
 }

@@ -7,10 +7,19 @@ import (
 	"github.com/go-gomail/gomail"
 )
 
-//Send mail to all defined clients
-func SendMail(data model.Mail, config config.SMTPConfig) error {
-	dialer := gomail.NewPlainDialer(config.Host, config.Port, config.User, config.Password)
+//Mailer for sending mails
+type Mailer struct {
+	Dialer *gomail.Dialer
+}
 
+// NewMailer creates a new mailer instance
+func NewMailer(config config.SMTPConfig) *Mailer {
+	dialer := gomail.NewPlainDialer(config.Host, config.Port, config.User, config.Password)
+	return &Mailer{dialer}
+}
+
+// Send a mail
+func (mailer *Mailer) Send(data model.Mail) error {
 	mail := gomail.NewMessage()
 	toList := make([]string, 0)
 	ccList := make([]string, 0)
@@ -44,13 +53,14 @@ func SendMail(data model.Mail, config config.SMTPConfig) error {
 	mail.SetHeader("karriere-mail-context", data.Context)
 	mail.SetHeader("karriere-mail-uuid", data.ID)
 
-	if err := dialer.DialAndSend(mail); err != nil {
+	if err := mailer.Dialer.DialAndSend(mail); err != nil {
 		return err
 	}
 
 	return nil
 }
 
+//Format a Client to mail conform string
 func formatEmail(client model.Client) string {
 	return fmt.Sprintf("%s <%s>", client.Name, client.Email)
 }
