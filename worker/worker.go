@@ -49,9 +49,11 @@ func (worker *QueueWorker) Start() {
 		return
 	}
 
+	defer channel.Close()
+
 	go func() {
 		<-signals
-		channel.Close()
+		fmt.Println("recieved shutdown signal")
 		done <- true
 	}()
 
@@ -62,17 +64,19 @@ func (worker *QueueWorker) Start() {
 		return
 	}
 
+	channel.Prefetch(20)
 	channel.Consume(q, "styx-consumer", MailConsumer{channel: queueToSMTP})
 
 	// wait for signal
 	<-done
+	fmt.Println("worker shutdown complete")
 }
 
 func (c MailConsumer) Execute(message queue.Message) {
 	mail := model.Mail{}
 	message.ParseFromJSON(&mail)
 
-	c.channel <- mail
+	//c.channel <- mail
 	fmt.Printf("%+v\n", mail)
 
 	message.Acknowledge()

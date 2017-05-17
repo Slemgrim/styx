@@ -1,5 +1,5 @@
-hash: 648c469442c7cd2fe7a111b8f680bb21e8d3ee781f6dee3488fa26e9a22670e7
-updated: 2017-05-16T13:25:40.499350652+02:00
+hash: f48b422931262aa4936e92967d1881f9ce366d7c514e5798faa4cec4474473e7
+updated: 2017-05-17T17:33:45.4774391+02:00
 imports:
 - name: github.com/gedex/inflector
   version: 16278e9db8130ac7ec405dc174cfb94344f16325
@@ -38,6 +38,8 @@ imports:
   - gingonic
 - name: github.com/mattn/go-isatty
   version: fc9e8d8ef48496124e79ae0df75490096eccf6fe
+- name: github.com/mattn/go-sqlite3
+  version: ca5e3819723d8eeaf170ad510e7da1d6d2e94a08
 - name: github.com/streadway/amqp
   version: 1c63b162b69cf6834e0b30e496c4cd5d6ee2a1d1
 - name: golang.org/x/net

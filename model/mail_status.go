@@ -12,7 +12,7 @@ type MailStatus struct {
 
 // GetName gets the type identifier of the resource
 func (m MailStatus) GetName() string {
-	return "mail-status"
+	return "mail"
 }
 
 // GetID retrieves the identifier of the mail

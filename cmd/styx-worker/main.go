@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/fetzi/styx/config"
@@ -9,9 +10,11 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
 func main() {
+	fmt.Println("starting styx worker")
 	config, err := config.ReadConfig("config.json")
 
 	if err != nil {
