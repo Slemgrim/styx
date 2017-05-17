@@ -64,6 +64,7 @@ func (worker *QueueWorker) Start() {
 		return
 	}
 
+	channel.Prefetch(20)
 	channel.Consume(q, "styx-consumer", MailConsumer{channel: queueToSMTP})
 
 	// wait for signal
@@ -75,7 +76,7 @@ func (c MailConsumer) Execute(message queue.Message) {
 	mail := model.Mail{}
 	message.ParseFromJSON(&mail)
 
-	c.channel <- mail
+	//c.channel <- mail
 	fmt.Printf("%+v\n", mail)
 
 	message.Acknowledge()
