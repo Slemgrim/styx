@@ -9,7 +9,6 @@ import (
 	"github.com/fetzi/styx/queue"
 	"github.com/fetzi/styx/resource"
 	"github.com/fetzi/styx/storage"
-	"github.com/fetzi/styx/styx"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -51,8 +50,6 @@ func main() {
 	)
 
 	mailStatusStorage := storage.NewMailStatusStorage(db)
-
-	styx.StartWorker(queue, config.Queue.QueueName)
 
 	api.AddResource(model.Mail{}, resource.MailResource{&mailStatusStorage, queue, config.Queue.QueueName})
 	api.AddResource(model.MailStatus{}, resource.MailStatusResource{&mailStatusStorage})
