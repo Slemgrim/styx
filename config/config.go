@@ -10,9 +10,10 @@ type Config struct {
 	HTTP    HTTPConfig
 	Storage StorageConfig
 	Queue   QueueConfig
+	SMTP    SMTPConfig
 }
 
-// HTTPConfig defines the configration for the http api
+// HTTPConfig defines the configuration for the http api
 type HTTPConfig struct {
 	Port int
 }
@@ -30,6 +31,15 @@ type QueueConfig struct {
 	Username  string
 	Password  string
 	QueueName string
+}
+
+// SMTPConfig defines the SMTP server settings
+type SMTPConfig struct {
+	Host string
+	Port int
+	Identity string
+	User string
+	Password string
 }
 
 // ReadConfig reads the json configuration values into the Config Struct

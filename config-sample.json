@@ -12,5 +12,11 @@
         "username": "guest",
         "password": "guest",
         "queueName": "test-queue"
+    },
+    "smtp": {
+        "host": "127.0.0.1",
+        "port": 1025,
+        "user": "user",
+        "password": "pass"
     }
 }

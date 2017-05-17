@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/fetzi/styx/mailer"
 	"github.com/fetzi/styx/model"
 	"github.com/fetzi/styx/queue"
 	"github.com/jinzhu/gorm"
@@ -17,19 +18,22 @@ type QueueWorker struct {
 	Database        *gorm.DB
 	QueueConnection *queue.Connection
 	QueueName       string
+	Mailer          *mailer.Mailer
 }
 
 type MailConsumer struct {
 	channel chan model.Mail
 	queue.MessageCallback
+	Mailer *mailer.Mailer
 }
 
 // NewQueueWorker creates a new queue worker instance
-func NewQueueWorker(database *gorm.DB, queueConnection *queue.Connection, queueName string) *QueueWorker {
+func NewQueueWorker(database *gorm.DB, queueConnection *queue.Connection, queueName string, mailer *mailer.Mailer) *QueueWorker {
 	return &QueueWorker{
 		database,
 		queueConnection,
 		queueName,
+		mailer,
 	}
 }
 
@@ -65,7 +69,10 @@ func (worker *QueueWorker) Start() {
 	}
 
 	channel.Prefetch(20)
-	channel.Consume(q, "styx-consumer", MailConsumer{channel: queueToSMTP})
+	channel.Consume(q, "styx-consumer", MailConsumer{
+		channel: queueToSMTP,
+		Mailer:  worker.Mailer,
+	})
 
 	// wait for signal
 	<-done
@@ -76,8 +83,11 @@ func (c MailConsumer) Execute(message queue.Message) {
 	mail := model.Mail{}
 	message.ParseFromJSON(&mail)
 
-	//c.channel <- mail
-	fmt.Printf("%+v\n", mail)
+	err := c.Mailer.Send(mail)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 
 	message.Acknowledge()
 }

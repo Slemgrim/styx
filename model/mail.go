@@ -2,7 +2,7 @@ package model
 
 // Mail defines the mail structure
 type Mail struct {
-	ID          string   `json:"-"`
+	ID          string   `json:"id"`
 	Context     string   `json:"context"`
 	Subject     string   `json:"subject"`
 	Clients     []Client `json:"clients"`
@@ -11,11 +11,23 @@ type Mail struct {
 	Attachments []string `json:"attachments"`
 }
 
+// ClientType defines different available mail headers associated with email addresses
+type ClientType string
+
+const (
+	CLIENT_TO ClientType = "to"
+	CLIENT_FROM ClientType = "from"
+	CLIENT_CC ClientType = "cc"
+	CLIENT_BCC ClientType = "bcc"
+	CLIENT_REPLY_TO ClientType = "reply-to"
+	CLIENT_RETURN_PATH ClientType = "return-path"
+)
+
 // Client defines the client structure
 type Client struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
-	Type  string `json:"type"`
+	Type  ClientType `json:"type"`
 }
 
 // Body defines the html and plain text fields

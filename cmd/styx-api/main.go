@@ -55,4 +55,5 @@ func main() {
 	api.AddResource(model.Mail{}, resource.MailResource{&mailStatusStorage, queue, config.Queue.QueueName})
 
 	router.Run(fmt.Sprintf(":%d", config.HTTP.Port))
+
 }
