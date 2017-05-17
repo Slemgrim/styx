@@ -23,6 +23,16 @@ type Queue struct {
 	Instance *amqp.Queue
 }
 
+// Message defines a rabbit mq message
+type Message struct {
+	Instance *amqp.Delivery
+}
+
+// MessageCallback defines the interface for the callback that gets executed when a message is consumed from the queue
+type MessageCallback interface {
+	Execute(message Message)
+}
+
 // NewConnection tba
 func NewConnection(host string, port int, username string, password string) (*Connection, error) {
 	connectionString := fmt.Sprintf("amqp://%s:%s@%s:%d/", username, password, host, port)
@@ -88,7 +98,57 @@ func (c *Channel) PublishAsJSON(queue *Queue, data interface{}) error {
 	return c.Publish(queue, string(jsonData), "application/json")
 }
 
+// Consume consumes messages from the given queue
+func (c *Channel) Consume(queue *Queue, consumerName string, callback MessageCallback) error {
+	deliveries, err := c.Instance.Consume(
+		queue.Instance.Name,
+		consumerName,
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		for delivery := range deliveries {
+			callback.Execute(Message{&delivery})
+		}
+	}()
+
+	return nil
+}
+
 // Close closes the opened channel
 func (c *Channel) Close() {
 	c.Instance.Close()
+}
+
+// ContentType retrieves the content type of the message
+func (m *Message) ContentType() string {
+	return m.Instance.ContentType
+}
+
+// Priority retrieves the message priority
+func (m *Message) Priority() uint8 {
+	return m.Instance.Priority
+}
+
+// Body retrieves the message body
+func (m *Message) Body() []byte {
+	return m.Instance.Body
+}
+
+// ParseFromJSON converts the message body into the given object
+func (m *Message) ParseFromJSON(object interface{}) error {
+	return json.Unmarshal(m.Body(), object)
+}
+
+// Acknowledge acknowledges the message
+func (m *Message) Acknowledge() {
+	m.Instance.Ack(false)
 }
