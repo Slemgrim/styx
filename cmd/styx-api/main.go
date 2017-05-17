@@ -54,8 +54,6 @@ func main() {
 
 	api.AddResource(model.Mail{}, resource.MailResource{&mailStatusStorage, queue, config.Queue.QueueName})
 
-	fmt.Println("Dero")
 	router.Run(fmt.Sprintf(":%d", config.HTTP.Port))
-	fmt.Println("run")
 
 }
