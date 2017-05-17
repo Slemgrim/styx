@@ -7,10 +7,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/fetzi/styx/mailer"
 	"github.com/fetzi/styx/model"
 	"github.com/fetzi/styx/queue"
 	"github.com/jinzhu/gorm"
-	"github.com/fetzi/styx/mailer"
 )
 
 // QueueWorker defines the queue specific information
@@ -24,7 +24,7 @@ type QueueWorker struct {
 type MailConsumer struct {
 	channel chan model.Mail
 	queue.MessageCallback
-	Mailer  *mailer.Mailer
+	Mailer *mailer.Mailer
 }
 
 // NewQueueWorker creates a new queue worker instance
@@ -71,7 +71,7 @@ func (worker *QueueWorker) Start() {
 	channel.Prefetch(20)
 	channel.Consume(q, "styx-consumer", MailConsumer{
 		channel: queueToSMTP,
-		Mailer: worker.Mailer,
+		Mailer:  worker.Mailer,
 	})
 
 	// wait for signal
@@ -85,7 +85,7 @@ func (c MailConsumer) Execute(message queue.Message) {
 
 	err := c.Mailer.Send(mail)
 	if err != nil {
-		//Todo
+		log.Fatal(err)
 		return
 	}
 

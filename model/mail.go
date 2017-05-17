@@ -2,7 +2,7 @@ package model
 
 // Mail defines the mail structure
 type Mail struct {
-	ID          string   `json:"-"`
+	ID          string   `json:"id"`
 	Context     string   `json:"context"`
 	Subject     string   `json:"subject"`
 	Clients     []Client `json:"clients"`
@@ -15,12 +15,12 @@ type Mail struct {
 type ClientType string
 
 const (
-	CLIENT_TO ClientType = "To"
-	CLIENT_FROM ClientType = "From"
-	CLIENT_CC ClientType = "Cc"
-	CLIENT_BCC ClientType = "Bcc"
-	CLIENT_REPLY_TO ClientType = "Reply-To"
-	CLIENT_RETURN_PATH ClientType = "Return-Path"
+	CLIENT_TO ClientType = "to"
+	CLIENT_FROM ClientType = "from"
+	CLIENT_CC ClientType = "cc"
+	CLIENT_BCC ClientType = "bcc"
+	CLIENT_REPLY_TO ClientType = "reply-to"
+	CLIENT_RETURN_PATH ClientType = "return-path"
 )
 
 // Client defines the client structure

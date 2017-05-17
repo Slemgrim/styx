@@ -5,6 +5,7 @@ import (
 	"github.com/fetzi/styx/config"
 	"github.com/fetzi/styx/model"
 	"github.com/go-gomail/gomail"
+	"errors"
 )
 
 //Mailer for sending mails
@@ -24,6 +25,9 @@ func (mailer *Mailer) Send(data model.Mail) error {
 	toList := make([]string, 0)
 	ccList := make([]string, 0)
 	bccList := make([]string, 0)
+	var from string;
+	var replyTo string;
+	var returnPath string;
 
 	for _, client := range data.Clients {
 		switch client.Type {
@@ -34,23 +38,66 @@ func (mailer *Mailer) Send(data model.Mail) error {
 		case model.CLIENT_BCC:
 			bccList = append(bccList, formatEmail(client))
 		case model.CLIENT_FROM:
-			mail.SetHeader("From", formatEmail(client))
+			from = formatEmail(client)
 		case model.CLIENT_REPLY_TO:
-			mail.SetHeader("Reply-To", formatEmail(client))
+			replyTo = formatEmail(client)
 		case model.CLIENT_RETURN_PATH:
-			mail.SetHeader("Return-Path", formatEmail(client))
+			returnPath = formatEmail(client)
 		}
 	}
 
+	if len(toList) == 0 {
+		return errors.New("To header missing")
+	}
 	mail.SetHeader("To", toList...)
-	mail.SetHeader("Cc", ccList...)
-	mail.SetHeader("Bcc", bccList...)
 
+	if from == "" {
+		return errors.New("From header missing")
+	}
+
+	mail.SetHeader("From", from)
+
+	if len(ccList) > 0 {
+		mail.SetHeader("Cc", ccList...)
+	}
+
+	if len(bccList) > 0 {
+		mail.SetHeader("Bcc", bccList...)
+	}
+
+	if replyTo != "" {
+		mail.SetHeader("Reply-To", replyTo)
+	}
+
+	if returnPath != "" {
+		mail.SetHeader("Return-Path", returnPath)
+	}
+
+	if data.Subject == "" {
+		return errors.New("Subject is missing")
+	}
 	mail.SetHeader("Subject", data.Subject)
-	mail.SetBody("text/html", data.Body.HTML)
-	mail.AddAlternative("text/plain", data.Body.Plain)
 
-	mail.SetHeader("karriere-mail-context", data.Context)
+	if data.Body.HTML == "" && data.Body.Plain == "" {
+		return errors.New("No body was provided")
+	}
+
+	if data.Body.HTML != "" {
+		mail.SetBody("text/html", data.Body.HTML)
+	}
+
+	if data.Body.Plain != "" {
+		mail.AddAlternative("text/plain", data.Body.Plain)
+	}
+
+	if data.Context != "" {
+		mail.SetHeader("karriere-mail-context", data.Context)
+	}
+
+	if data.ID == "" {
+		return errors.New("Id is missing")
+	}
+
 	mail.SetHeader("karriere-mail-uuid", data.ID)
 
 	if err := mailer.Dialer.DialAndSend(mail); err != nil {
@@ -62,5 +109,9 @@ func (mailer *Mailer) Send(data model.Mail) error {
 
 //Format a Client to mail conform string
 func formatEmail(client model.Client) string {
-	return fmt.Sprintf("%s <%s>", client.Name, client.Email)
+	if client.Name == "" {
+		return client.Email
+	} else {
+		return fmt.Sprintf("%s <%s>", client.Name, client.Email)
+	}
 }
