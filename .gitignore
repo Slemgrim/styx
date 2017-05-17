@@ -3,3 +3,5 @@ styx.sqlite
 vendor
 .vscode
 main
+styx-api
+styx-worker
