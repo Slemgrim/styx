@@ -12,7 +12,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/manyminds/api2go"
 	"github.com/manyminds/api2go-adapter/gingonic"
 	gin "gopkg.in/gin-gonic/gin.v1"
