@@ -32,17 +32,35 @@ func (mailer *Mailer) Send(data model.Mail) error {
 	for _, client := range data.Clients {
 		switch client.Type {
 		case model.CLIENT_TO:
-			toList = append(toList, formatEmail(client))
+			email, err := formatEmail(client)
+			if err == nil {
+				toList = append(toList, email)
+			}
 		case model.CLIENT_CC:
-			ccList = append(ccList, formatEmail(client))
+			email, err := formatEmail(client)
+			if err == nil {
+				ccList = append(ccList, email)
+			}
 		case model.CLIENT_BCC:
-			bccList = append(bccList, formatEmail(client))
+			email, err := formatEmail(client)
+			if err == nil {
+				bccList = append(bccList, email)
+			}
 		case model.CLIENT_FROM:
-			from = formatEmail(client)
+			email, err := formatEmail(client)
+			if err == nil {
+				from = email
+			}
 		case model.CLIENT_REPLY_TO:
-			replyTo = formatEmail(client)
+			email, err := formatEmail(client)
+			if err == nil {
+				replyTo = email
+			}
 		case model.CLIENT_RETURN_PATH:
-			returnPath = formatEmail(client)
+			email, err := formatEmail(client)
+			if err == nil {
+				returnPath = email
+			}
 		}
 	}
 
@@ -108,10 +126,13 @@ func (mailer *Mailer) Send(data model.Mail) error {
 }
 
 //Format a Client to mail conform string
-func formatEmail(client model.Client) string {
+func formatEmail(client model.Client) (string, error) {
+	if client.Email == "" {
+		return "", errors.New("Missing email")
+	}
 	if client.Name == "" {
-		return client.Email
+		return client.Email, nil
 	} else {
-		return fmt.Sprintf("%s <%s>", client.Name, client.Email)
+		return fmt.Sprintf("%s <%s>", client.Name, client.Email), nil
 	}
 }
