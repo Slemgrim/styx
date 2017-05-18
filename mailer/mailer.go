@@ -6,17 +6,19 @@ import (
 	"github.com/fetzi/styx/model"
 	"github.com/go-gomail/gomail"
 	"errors"
+	"os"
 )
 
 //Mailer for sending mails
 type Mailer struct {
 	Dialer *gomail.Dialer
+	AttachmentPath string
 }
 
 // NewMailer creates a new mailer instance
-func NewMailer(config config.SMTPConfig) *Mailer {
-	dialer := gomail.NewPlainDialer(config.Host, config.Port, config.User, config.Password)
-	return &Mailer{dialer}
+func NewMailer(smtpConfig config.SMTPConfig, attachmentConfig config.AttachmentConfig) *Mailer {
+	dialer := gomail.NewPlainDialer(smtpConfig.Host, smtpConfig.Port, smtpConfig.User, smtpConfig.Password)
+	return &Mailer{dialer, attachmentConfig.Path}
 }
 
 // Send a mail
@@ -99,6 +101,16 @@ func (mailer *Mailer) Send(data model.Mail) error {
 	}
 
 	mail.SetHeader("karriere-mail-uuid", data.ID)
+
+	if len(data.Attachments) > 0 {
+		for _, attachment := range data.Attachments {
+			file := fmt.Sprintf("%s/%s", mailer.AttachmentPath, attachment.FileName)
+			if _, err := os.Stat(file); os.IsNotExist(err) {
+				return errors.New(fmt.Sprintf("File '%s' doesn't exist", file))
+			}
+			mail.Attach(file)
+		}
+	}
 
 	if err := mailer.Dialer.DialAndSend(mail); err != nil {
 		return err
