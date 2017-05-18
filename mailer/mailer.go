@@ -32,35 +32,17 @@ func (mailer *Mailer) Send(data model.Mail) error {
 	for _, client := range data.Clients {
 		switch client.Type {
 		case model.CLIENT_TO:
-			email, err := formatEmail(client)
-			if err == nil {
-				toList = append(toList, email)
-			}
+			toList = addClientToList(toList, client)
 		case model.CLIENT_CC:
-			email, err := formatEmail(client)
-			if err == nil {
-				ccList = append(ccList, email)
-			}
+			ccList = addClientToList(ccList, client)
 		case model.CLIENT_BCC:
-			email, err := formatEmail(client)
-			if err == nil {
-				bccList = append(bccList, email)
-			}
+			bccList = addClientToList(bccList, client)
 		case model.CLIENT_FROM:
-			email, err := formatEmail(client)
-			if err == nil {
-				from = email
-			}
+			from = setValidClient(client)
 		case model.CLIENT_REPLY_TO:
-			email, err := formatEmail(client)
-			if err == nil {
-				replyTo = email
-			}
+			replyTo = setValidClient(client)
 		case model.CLIENT_RETURN_PATH:
-			email, err := formatEmail(client)
-			if err == nil {
-				returnPath = email
-			}
+			returnPath = setValidClient(client)
 		}
 	}
 
@@ -135,4 +117,22 @@ func formatEmail(client model.Client) (string, error) {
 	} else {
 		return fmt.Sprintf("%s <%s>", client.Name, client.Email), nil
 	}
+}
+
+func addClientToList(list []string, client model.Client) []string {
+	email, err := formatEmail(client)
+	if err == nil {
+		list = append(list, email)
+	}
+
+	return list
+}
+
+func setValidClient(client model.Client) string {
+	email, err := formatEmail(client)
+	if err == nil {
+		return email
+	}
+
+	return ""
 }
