@@ -93,14 +93,14 @@ func (mailer *Mailer) Send(data model.Mail) error {
 	}
 
 	if data.Context != "" {
-		mail.SetHeader("karriere-mail-context", data.Context)
+		mail.SetHeader("styx-mail-context", data.Context)
 	}
 
 	if data.ID == "" {
 		return errors.New("Id is missing")
 	}
 
-	mail.SetHeader("karriere-mail-uuid", data.ID)
+	mail.SetHeader("styx-mail-uuid", data.ID)
 
 	if len(data.Attachments) > 0 {
 		for _, attachment := range data.Attachments {
@@ -108,7 +108,8 @@ func (mailer *Mailer) Send(data model.Mail) error {
 			if _, err := os.Stat(file); os.IsNotExist(err) {
 				return errors.New(fmt.Sprintf("File '%s' doesn't exist", file))
 			}
-			mail.Attach(file)
+			attachmentIdHeader := map[string][]string{"styx-attachment-uuid": {attachment.ID}}
+			mail.Attach(file, gomail.SetHeader(attachmentIdHeader))
 		}
 	}
 
