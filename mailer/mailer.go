@@ -7,6 +7,7 @@ import (
 	"github.com/go-gomail/gomail"
 	"errors"
 	"os"
+	"time"
 )
 
 //Mailer for sending mails
@@ -34,17 +35,17 @@ func (mailer *Mailer) Send(data model.Mail) error {
 	for _, client := range data.Clients {
 		switch client.Type {
 		case model.CLIENT_TO:
-			toList = append(toList, formatEmail(client))
+			toList = append(toList, mail.FormatAddress(client.Email, client.Name))
 		case model.CLIENT_CC:
-			ccList = append(ccList, formatEmail(client))
+			ccList = append(ccList, mail.FormatAddress(client.Email, client.Name))
 		case model.CLIENT_BCC:
-			bccList = append(bccList, formatEmail(client))
+			bccList = append(bccList, mail.FormatAddress(client.Email, client.Name))
 		case model.CLIENT_FROM:
-			from = formatEmail(client)
+			from = mail.FormatAddress(client.Email, client.Name)
 		case model.CLIENT_REPLY_TO:
-			replyTo = formatEmail(client)
+			replyTo = mail.FormatAddress(client.Email, client.Name)
 		case model.CLIENT_RETURN_PATH:
-			returnPath = formatEmail(client)
+			returnPath = mail.FormatAddress(client.Email, client.Name)
 		}
 	}
 
@@ -101,6 +102,7 @@ func (mailer *Mailer) Send(data model.Mail) error {
 	}
 
 	mail.SetHeader("styx-mail-uuid", data.ID)
+	mail.SetHeader("styx-mail-date", mail.FormatDate(time.Now()))
 
 	if len(data.Attachments) > 0 {
 		for _, attachment := range data.Attachments {
@@ -118,13 +120,4 @@ func (mailer *Mailer) Send(data model.Mail) error {
 	}
 
 	return nil
-}
-
-//Format a Client to mail conform string
-func formatEmail(client model.Client) string {
-	if client.Name == "" {
-		return client.Email
-	} else {
-		return fmt.Sprintf("%s <%s>", client.Name, client.Email)
-	}
 }
