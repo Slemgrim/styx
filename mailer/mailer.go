@@ -11,7 +11,7 @@ import (
 
 //Mailer for sending mails
 type Mailer struct {
-	Dialer *gomail.Dialer
+	Dialer         *gomail.Dialer
 	AttachmentPath string
 }
 
@@ -109,7 +109,7 @@ func (mailer *Mailer) Send(data model.Mail) error {
 				return errors.New(fmt.Sprintf("File '%s' doesn't exist", file))
 			}
 			attachmentIdHeader := map[string][]string{"styx-attachment-uuid": {attachment.ID}}
-			mail.Attach(file, gomail.SetHeader(attachmentIdHeader))
+			mail.Attach(file, gomail.Rename(attachment.OriginalName), gomail.SetHeader(attachmentIdHeader))
 		}
 	}
 
