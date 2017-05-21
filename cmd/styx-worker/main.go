@@ -39,7 +39,7 @@ func main() {
 
 	defer queue.Close()
 
-	mailer := mailer.NewMailer(config.SMTP)
+	mailer := mailer.NewMailer(config.SMTP, config.Attachments)
 	worker := worker.NewQueueWorker(db, queue, config.Queue.QueueName, mailer)
 
 	worker.Start()
