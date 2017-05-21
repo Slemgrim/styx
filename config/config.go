@@ -12,6 +12,7 @@ type Config struct {
 	Queue   QueueConfig
 	SMTP    SMTPConfig
 	Attachments AttachmentConfig
+	Logging LoggingConfig
 }
 
 // HTTPConfig defines the configuration for the http api
@@ -36,15 +37,34 @@ type QueueConfig struct {
 
 // SMTPConfig defines the SMTP server settings
 type SMTPConfig struct {
-	Host string
-	Port int
+	Host     string
+	Port     int
 	Identity string
-	User string
+	User     string
 	Password string
 }
 
+// Config for mail attachments
 type AttachmentConfig struct {
 	Path string
+}
+
+// Config for everything about logging
+type LoggingConfig struct {
+	Sentry SentryConfig
+	File FileLoggingConfig
+}
+
+// Specific Sentry logging config
+type SentryConfig struct {
+	DSN string
+	Level string
+}
+
+// Specifig File logging config
+type FileLoggingConfig struct {
+	Path string
+	Level string
 }
 
 // ReadConfig reads the json configuration values into the Config Struct

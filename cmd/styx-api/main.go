@@ -15,20 +15,38 @@ import (
 	"github.com/manyminds/api2go"
 	"github.com/manyminds/api2go-adapter/gingonic"
 	gin "gopkg.in/gin-gonic/gin.v1"
+	"github.com/getsentry/raven-go"
+	"github.com/fetzi/styx/error"
 )
 
+func init() {
+	fmt.Println("init styx worker")
+	config, err := config.ReadConfig("config.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	error.Register(config.Logging)
+}
+
 func main() {
+	raven.CapturePanic(func() {
+		bootstrap()
+	}, nil)
+}
+
+func bootstrap() {
+	fmt.Println("starting styx api")
 	config, err := config.ReadConfig("config.json")
 
 	if err != nil {
-		log.Fatal(err)
+		error.LogError(err, error.FATAL, nil)
 	}
 
 	db, err := gorm.Open(config.Storage.Driver, config.Storage.Config)
 
 	if err != nil {
-		log.Fatal(err)
-		return
+		error.LogError(err, error.FATAL, nil)
 	}
 
 	defer db.Close()
@@ -36,8 +54,7 @@ func main() {
 	queue, err := queue.NewConnection(config.Queue.Host, config.Queue.Port, config.Queue.Username, config.Queue.Password)
 
 	if err != nil {
-		log.Fatal(err)
-		return
+		error.LogError(err, error.FATAL, nil)
 	}
 
 	defer queue.Close()
@@ -54,5 +71,4 @@ func main() {
 	api.AddResource(model.Mail{}, resource.MailResource{&mailStatusStorage, queue, config.Queue.QueueName})
 
 	router.Run(fmt.Sprintf(":%d", config.HTTP.Port))
-
 }
