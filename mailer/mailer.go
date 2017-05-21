@@ -6,17 +6,20 @@ import (
 	"github.com/fetzi/styx/model"
 	"github.com/go-gomail/gomail"
 	"errors"
+	"os"
+	"time"
 )
 
 //Mailer for sending mails
 type Mailer struct {
-	Dialer *gomail.Dialer
+	Dialer         *gomail.Dialer
+	AttachmentPath string
 }
 
 // NewMailer creates a new mailer instance
-func NewMailer(config config.SMTPConfig) *Mailer {
-	dialer := gomail.NewPlainDialer(config.Host, config.Port, config.User, config.Password)
-	return &Mailer{dialer}
+func NewMailer(smtpConfig config.SMTPConfig, attachmentConfig config.AttachmentConfig) *Mailer {
+	dialer := gomail.NewPlainDialer(smtpConfig.Host, smtpConfig.Port, smtpConfig.User, smtpConfig.Password)
+	return &Mailer{dialer, attachmentConfig.Path}
 }
 
 // Send a mail
@@ -32,17 +35,17 @@ func (mailer *Mailer) Send(data model.Mail) error {
 	for _, client := range data.Clients {
 		switch client.Type {
 		case model.CLIENT_TO:
-			toList = append(toList, formatEmail(client))
+			toList = append(toList, mail.FormatAddress(client.Email, client.Name))
 		case model.CLIENT_CC:
-			ccList = append(ccList, formatEmail(client))
+			ccList = append(ccList, mail.FormatAddress(client.Email, client.Name))
 		case model.CLIENT_BCC:
-			bccList = append(bccList, formatEmail(client))
+			bccList = append(bccList, mail.FormatAddress(client.Email, client.Name))
 		case model.CLIENT_FROM:
-			from = formatEmail(client)
+			from = mail.FormatAddress(client.Email, client.Name)
 		case model.CLIENT_REPLY_TO:
-			replyTo = formatEmail(client)
+			replyTo = mail.FormatAddress(client.Email, client.Name)
 		case model.CLIENT_RETURN_PATH:
-			returnPath = formatEmail(client)
+			returnPath = mail.FormatAddress(client.Email, client.Name)
 		}
 	}
 
@@ -91,27 +94,30 @@ func (mailer *Mailer) Send(data model.Mail) error {
 	}
 
 	if data.Context != "" {
-		mail.SetHeader("karriere-mail-context", data.Context)
+		mail.SetHeader("styx-mail-context", data.Context)
 	}
 
 	if data.ID == "" {
 		return errors.New("Id is missing")
 	}
 
-	mail.SetHeader("karriere-mail-uuid", data.ID)
+	mail.SetHeader("styx-mail-uuid", data.ID)
+	mail.SetHeader("styx-mail-date", mail.FormatDate(time.Now()))
+
+	if len(data.Attachments) > 0 {
+		for _, attachment := range data.Attachments {
+			file := fmt.Sprintf("%s/%s", mailer.AttachmentPath, attachment.FileName)
+			if _, err := os.Stat(file); os.IsNotExist(err) {
+				return errors.New(fmt.Sprintf("File '%s' doesn't exist", file))
+			}
+			attachmentIdHeader := map[string][]string{"styx-attachment-uuid": {attachment.ID}}
+			mail.Attach(file, gomail.Rename(attachment.OriginalName), gomail.SetHeader(attachmentIdHeader))
+		}
+	}
 
 	if err := mailer.Dialer.DialAndSend(mail); err != nil {
 		return err
 	}
 
 	return nil
-}
-
-//Format a Client to mail conform string
-func formatEmail(client model.Client) string {
-	if client.Name == "" {
-		return client.Email
-	} else {
-		return fmt.Sprintf("%s <%s>", client.Name, client.Email)
-	}
 }

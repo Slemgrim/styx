@@ -11,6 +11,7 @@ type Config struct {
 	Storage StorageConfig
 	Queue   QueueConfig
 	SMTP    SMTPConfig
+	Attachments AttachmentConfig
 }
 
 // HTTPConfig defines the configuration for the http api
@@ -40,6 +41,10 @@ type SMTPConfig struct {
 	Identity string
 	User string
 	Password string
+}
+
+type AttachmentConfig struct {
+	Path string
 }
 
 // ReadConfig reads the json configuration values into the Config Struct

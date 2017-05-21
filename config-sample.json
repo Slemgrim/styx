@@ -18,5 +18,8 @@
         "port": 1025,
         "user": "user",
         "password": "pass"
+    },
+    "attachments": {
+        "path": "./temp/attachments"
     }
 }

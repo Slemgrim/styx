@@ -8,7 +8,7 @@ type Mail struct {
 	Clients     []Client `json:"clients"`
 	Body        Body     `json:"body"`
 	Priority    int      `json:"priority"`
-	Attachments []string `json:"attachments"`
+	Attachments []Attachment `json:"attachments"`
 }
 
 // ClientType defines different available mail headers associated with email addresses
@@ -28,6 +28,12 @@ type Client struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
 	Type  ClientType `json:"type"`
+}
+
+type Attachment struct {
+	ID           string   `json:"id"`
+	OriginalName string `json:"original-name"`
+	FileName     string `json:"file-name"`
 }
 
 // Body defines the html and plain text fields
