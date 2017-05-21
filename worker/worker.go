@@ -11,6 +11,7 @@ import (
 	"github.com/fetzi/styx/model"
 	"github.com/fetzi/styx/queue"
 	"github.com/jinzhu/gorm"
+	"github.com/fetzi/styx/error"
 )
 
 // QueueWorker defines the queue specific information
@@ -49,8 +50,7 @@ func (worker *QueueWorker) Start() {
 	channel, err := worker.QueueConnection.Channel()
 
 	if err != nil {
-		log.Fatal(err)
-		return
+		error.LogError(err, error.WARNING, nil)
 	}
 
 	defer channel.Close()
@@ -64,8 +64,7 @@ func (worker *QueueWorker) Start() {
 	q, err := channel.DeclareQueue(worker.QueueName, false, false, false, false)
 
 	if err != nil {
-		log.Fatal(err)
-		return
+		error.LogError(err, error.FATAL, nil)
 	}
 
 	channel.Prefetch(20)
@@ -85,8 +84,7 @@ func (c MailConsumer) Execute(message queue.Message) {
 
 	err := c.Mailer.Send(mail)
 	if err != nil {
-		log.Fatal(err)
-		return
+		error.LogError(err, error.WARNING, nil)
 	}
 
 	message.Acknowledge()

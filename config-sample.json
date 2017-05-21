@@ -21,5 +21,15 @@
     },
     "attachments": {
         "path": "./temp/attachments"
+    },
+    "logging": {
+        "sentry": {
+            "dsn": "",
+            "level": "info"
+        },
+        "file": {
+            "path": "./temp/log/styx.log",
+            "level": "info"
+        }
     }
 }

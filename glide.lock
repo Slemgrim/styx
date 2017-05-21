@@ -1,8 +1,12 @@
-hash: b7b21117b88deb7acb34233867ab78a45290b1daf3f8083314fee77a53f84ebe
-updated: 2017-05-21T13:10:03.880953047+02:00
+hash: 4a9b6002be6f66d72a95f62a2d059aeb06ba91c6686e61aaac9173966c39e91d
+updated: 2017-05-20T09:22:13.832681153+02:00
 imports:
+- name: github.com/certifi/gocertifi
+  version: a9c833d2837d3b16888d55d5aafa9ffe9afb22b0
 - name: github.com/gedex/inflector
   version: 16278e9db8130ac7ec405dc174cfb94344f16325
+- name: github.com/getsentry/raven-go
+  version: 5c07ee42021d8df0718f06bc7ea6b17123a44f9c
 - name: github.com/gin-gonic/gin
   version: d5b353c5d5a560322e6d96121c814115562501f7
   subpackages:
@@ -49,7 +53,7 @@ imports:
   subpackages:
   - context
 - name: golang.org/x/sys
-  version: a2e06a18b0d52d8cb2010e04b372a1965d8e3439
+  version: f845067cf72a21fb4929b0e6a35273bd83b56396
   subpackages:
   - unix
 - name: gopkg.in/alexcesaro/quotedprintable.v3
