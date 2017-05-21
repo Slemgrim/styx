@@ -49,10 +49,8 @@ func (mailer *Mailer) Send(mail model.Mail) error {
 		}
 	}
 
-	fmt.Println(toList)
-
-	if len(toList) == 0 {
-		return errors.New("To header missing")
+	if len(toList) == 0 &&  len(ccList) == 0 && len(bccList) == 0{
+		return errors.New("A mail needs at least on to, cc or bcc email")
 	}
 	message.SetHeader("To", toList...)
 
