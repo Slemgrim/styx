@@ -85,8 +85,8 @@ func (c MailConsumer) Execute(message queue.Message) {
 
 	err := c.Mailer.Send(mail)
 	if err != nil {
-		log.Fatal(err)
-		return
+		fmt.Println(err)
+		//Todo what to do when a queue entry can't be sent #19
 	}
 
 	message.Acknowledge()

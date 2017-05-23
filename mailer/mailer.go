@@ -23,8 +23,8 @@ func NewMailer(smtpConfig config.SMTPConfig, attachmentConfig config.AttachmentC
 }
 
 // Send a mail
-func (mailer *Mailer) Send(data model.Mail) error {
-	mail := gomail.NewMessage()
+func (mailer *Mailer) Send(mail model.Mail) error {
+	message := gomail.NewMessage()
 	toList := make([]string, 0)
 	ccList := make([]string, 0)
 	bccList := make([]string, 0)
@@ -32,80 +32,118 @@ func (mailer *Mailer) Send(data model.Mail) error {
 	var replyTo string;
 	var returnPath string;
 
-	for _, client := range data.Clients {
+	for _, client := range mail.Clients {
 		switch client.Type {
 		case model.CLIENT_TO:
-			toList = append(toList, mail.FormatAddress(client.Email, client.Name))
+			toList = addClientToList(toList, client, message)
 		case model.CLIENT_CC:
-			ccList = append(ccList, mail.FormatAddress(client.Email, client.Name))
+			ccList = addClientToList(toList, client, message)
 		case model.CLIENT_BCC:
-			bccList = append(bccList, mail.FormatAddress(client.Email, client.Name))
+			bccList = addClientToList(toList, client, message)
 		case model.CLIENT_FROM:
-			from = mail.FormatAddress(client.Email, client.Name)
+			from = setValidClient(client, message)
 		case model.CLIENT_REPLY_TO:
-			replyTo = mail.FormatAddress(client.Email, client.Name)
+			replyTo = setValidClient(client, message)
 		case model.CLIENT_RETURN_PATH:
-			returnPath = mail.FormatAddress(client.Email, client.Name)
+			returnPath = setValidClient(client, message)
 		}
 	}
 
-	if len(toList) == 0 {
-		return errors.New("To header missing")
+	if len(toList) == 0 &&  len(ccList) == 0 && len(bccList) == 0{
+		return errors.New("A mail needs at least on to, cc or bcc email")
 	}
-	mail.SetHeader("To", toList...)
+	message.SetHeader("To", toList...)
 
 	if from == "" {
 		return errors.New("From header missing")
 	}
 
-	mail.SetHeader("From", from)
+	message.SetHeader("From", from)
 
 	if len(ccList) > 0 {
-		mail.SetHeader("Cc", ccList...)
+		message.SetHeader("Cc", ccList...)
 	}
 
 	if len(bccList) > 0 {
-		mail.SetHeader("Bcc", bccList...)
+		message.SetHeader("Bcc", bccList...)
 	}
 
 	if replyTo != "" {
-		mail.SetHeader("Reply-To", replyTo)
+		message.SetHeader("Reply-To", replyTo)
 	}
 
 	if returnPath != "" {
-		mail.SetHeader("Return-Path", returnPath)
+		message.SetHeader("Return-Path", returnPath)
 	}
 
-	if data.Subject == "" {
+	if mail.Subject == "" {
 		return errors.New("Subject is missing")
 	}
-	mail.SetHeader("Subject", data.Subject)
+	message.SetHeader("Subject", mail.Subject)
 
-	if data.Body.HTML == "" && data.Body.Plain == "" {
+	if mail.Body.HTML == "" && mail.Body.Plain == "" {
 		return errors.New("No body was provided")
 	}
 
-	if data.Body.HTML != "" {
-		mail.SetBody("text/html", data.Body.HTML)
+	if mail.Body.HTML != "" {
+		message.SetBody("text/html", mail.Body.HTML)
 	}
 
-	if data.Body.Plain != "" {
-		mail.AddAlternative("text/plain", data.Body.Plain)
+	if mail.Body.Plain != "" {
+		message.AddAlternative("text/plain", mail.Body.Plain)
 	}
 
-	if data.Context != "" {
-		mail.SetHeader("styx-mail-context", data.Context)
+	if mail.Context != "" {
+		message.SetHeader("styx-mail-context", mail.Context)
 	}
 
-	if data.ID == "" {
+	if mail.ID == "" {
 		return errors.New("Id is missing")
 	}
 
-	mail.SetHeader("styx-mail-uuid", data.ID)
-	mail.SetHeader("styx-mail-date", mail.FormatDate(time.Now()))
+	message.SetHeader("styx-mail-uuid", mail.ID)
+	message.SetHeader("styx-mail-date", message.FormatDate(time.Now()))
 
-	if len(data.Attachments) > 0 {
-		for _, attachment := range data.Attachments {
+	addAttachments(message, mail.Attachments, mailer)
+
+	if err := mailer.Dialer.DialAndSend(message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+
+//Format a Client to mail conform string
+func formatEmail(client model.Client, message *gomail.Message) (string, error) {
+	if client.Email == "" {
+		return "", errors.New("Missing email")
+	}
+	return message.FormatAddress(client.Email, client.Name), nil
+}
+
+func addClientToList(list []string, client model.Client, message *gomail.Message) []string {
+	email, err := formatEmail(client, message)
+	if err == nil {
+		list = append(list, email)
+	}
+
+	return list
+}
+
+func setValidClient(client model.Client, message *gomail.Message) string {
+	email, err := formatEmail(client, message)
+	if err == nil {
+		return email
+	}
+
+	return ""
+}
+
+
+func addAttachments(mail *gomail.Message, attachments []model.Attachment, mailer *Mailer) error {
+	if len(attachments) > 0 {
+		for _, attachment := range attachments {
 			file := fmt.Sprintf("%s/%s", mailer.AttachmentPath, attachment.FileName)
 			if _, err := os.Stat(file); os.IsNotExist(err) {
 				return errors.New(fmt.Sprintf("File '%s' doesn't exist", file))
@@ -114,10 +152,5 @@ func (mailer *Mailer) Send(data model.Mail) error {
 			mail.Attach(file, gomail.Rename(attachment.OriginalName), gomail.SetHeader(attachmentIdHeader))
 		}
 	}
-
-	if err := mailer.Dialer.DialAndSend(mail); err != nil {
-		return err
-	}
-
 	return nil
 }
