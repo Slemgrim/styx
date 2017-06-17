@@ -22,3 +22,5 @@ import:
   version: ^1.2.0
 - package: github.com/go-gomail/gomail
   version: 81ebce5c23dfd25c6c67194b37d3dd3f338c98b1
+- package: github.com/Slemgrim/gorage
+  version: ^0.1.0

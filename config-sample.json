@@ -19,7 +19,8 @@
         "user": "user",
         "password": "pass"
     },
-    "attachments": {
-        "path": "./temp/attachments"
+    "files": {
+        "attachmentsPath": "./temp/attachments",
+        "bodyPath": "./temp/attachments"
     }
 }

@@ -28,11 +28,14 @@ func NewMailStatusStorage(db *gorm.DB) MailStatusStorage {
 // GetOne tba
 func (s MailStatusStorage) GetOne(id string) (model.MailStatus, error) {
 	mailStatus := model.MailStatus{}
-	s.db.Where("mail_id = ?", id).First(&mailStatus)
+	notFound := s.db.Where(model.MailStatus{
+		MailID: id,
+	}).First(&mailStatus).RecordNotFound()
 
-	if mailStatus.MailID != "" {
-		return mailStatus, nil
+	if notFound {
+		return mailStatus, fmt.Errorf("Mail Status with id %s not found", id)
 	}
 
-	return mailStatus, fmt.Errorf("Mail Status with id %s not found", id)
+	return mailStatus, nil
+
 }

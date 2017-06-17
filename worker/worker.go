@@ -7,9 +7,12 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/Slemgrim/gorage"
 	"github.com/fetzi/styx/mailer"
 	"github.com/fetzi/styx/model"
 	"github.com/fetzi/styx/queue"
+	"github.com/fetzi/styx/storage"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -19,21 +22,34 @@ type QueueWorker struct {
 	QueueConnection *queue.Connection
 	QueueName       string
 	Mailer          *mailer.Mailer
+	BodyStore       *gorage.Gorage
+	StatusStorage   storage.MailStatusStorage
 }
 
 type MailConsumer struct {
 	channel chan model.Mail
 	queue.MessageCallback
-	Mailer *mailer.Mailer
+	mailer        *mailer.Mailer
+	bodyStore     *gorage.Gorage
+	statusStorage storage.MailStatusStorage
+	database      *gorm.DB
 }
 
 // NewQueueWorker creates a new queue worker instance
-func NewQueueWorker(database *gorm.DB, queueConnection *queue.Connection, queueName string, mailer *mailer.Mailer) *QueueWorker {
+func NewQueueWorker(
+	database *gorm.DB,
+	queueConnection *queue.Connection,
+	queueName string,
+	mailer *mailer.Mailer,
+	bodyStore *gorage.Gorage,
+	statusStorage storage.MailStatusStorage) *QueueWorker {
 	return &QueueWorker{
 		database,
 		queueConnection,
 		queueName,
 		mailer,
+		bodyStore,
+		statusStorage,
 	}
 }
 
@@ -70,8 +86,11 @@ func (worker *QueueWorker) Start() {
 
 	channel.Prefetch(20)
 	channel.Consume(q, "styx-consumer", MailConsumer{
-		channel: queueToSMTP,
-		Mailer:  worker.Mailer,
+		channel:       queueToSMTP,
+		mailer:        worker.Mailer,
+		bodyStore:     worker.BodyStore,
+		statusStorage: worker.StatusStorage,
+		database:      worker.Database,
 	})
 
 	// wait for signal
@@ -83,11 +102,45 @@ func (c MailConsumer) Execute(message queue.Message) {
 	mail := model.Mail{}
 	message.ParseFromJSON(&mail)
 
-	err := c.Mailer.Send(mail)
+	err := c.mailer.Send(mail)
 	if err != nil {
 		fmt.Println(err)
 		//Todo what to do when a queue entry can't be sent #19
 	}
+
+	context := make(map[string]string)
+	context["ID"] = mail.ID
+	context["context"] = mail.Context
+	context["type"] = "HTML"
+
+	bodyHTMLFile, err := c.bodyStore.Save(mail.ID, []byte(mail.Body.HTML), context)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	context["type"] = "Plain"
+
+	bodyPlainFile, err := c.bodyStore.Save(mail.ID, []byte(mail.Body.Plain), context)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	status, err := c.statusStorage.GetOne(mail.ID)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	status.BodyHtml = bodyHTMLFile.ID
+	status.BodyPlain = bodyPlainFile.ID
+	status.Sent = 1
+
+	c.database.Save(&status)
 
 	message.Acknowledge()
 }

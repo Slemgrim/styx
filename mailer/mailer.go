@@ -1,13 +1,14 @@
 package mailer
 
 import (
+	"errors"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/fetzi/styx/config"
 	"github.com/fetzi/styx/model"
 	"github.com/go-gomail/gomail"
-	"errors"
-	"os"
-	"time"
 )
 
 //Mailer for sending mails
@@ -17,9 +18,9 @@ type Mailer struct {
 }
 
 // NewMailer creates a new mailer instance
-func NewMailer(smtpConfig config.SMTPConfig, attachmentConfig config.AttachmentConfig) *Mailer {
+func NewMailer(smtpConfig config.SMTPConfig, filesConfig config.FilesConfig) *Mailer {
 	dialer := gomail.NewPlainDialer(smtpConfig.Host, smtpConfig.Port, smtpConfig.User, smtpConfig.Password)
-	return &Mailer{dialer, attachmentConfig.Path}
+	return &Mailer{dialer, filesConfig.AttachmentPath}
 }
 
 // Send a mail
@@ -28,9 +29,9 @@ func (mailer *Mailer) Send(mail model.Mail) error {
 	toList := make([]string, 0)
 	ccList := make([]string, 0)
 	bccList := make([]string, 0)
-	var from string;
-	var replyTo string;
-	var returnPath string;
+	var from string
+	var replyTo string
+	var returnPath string
 
 	for _, client := range mail.Clients {
 		switch client.Type {
@@ -49,7 +50,7 @@ func (mailer *Mailer) Send(mail model.Mail) error {
 		}
 	}
 
-	if len(toList) == 0 &&  len(ccList) == 0 && len(bccList) == 0{
+	if len(toList) == 0 && len(ccList) == 0 && len(bccList) == 0 {
 		return errors.New("A mail needs at least on to, cc or bcc email")
 	}
 	message.SetHeader("To", toList...)
@@ -113,7 +114,6 @@ func (mailer *Mailer) Send(mail model.Mail) error {
 	return nil
 }
 
-
 //Format a Client to mail conform string
 func formatEmail(client model.Client, message *gomail.Message) (string, error) {
 	if client.Email == "" {
@@ -139,7 +139,6 @@ func setValidClient(client model.Client, message *gomail.Message) string {
 
 	return ""
 }
-
 
 func addAttachments(mail *gomail.Message, attachments []model.Attachment, mailer *Mailer) error {
 	if len(attachments) > 0 {
