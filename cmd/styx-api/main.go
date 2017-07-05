@@ -1,20 +1,19 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"net/http"
 
-	"github.com/fetzi/styx/config"
-	"github.com/fetzi/styx/model"
-	"github.com/fetzi/styx/queue"
-	"github.com/fetzi/styx/resource"
-	"github.com/fetzi/styx/storage"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"github.com/manyminds/api2go"
-	"github.com/manyminds/api2go-adapter/gingonic"
-	gin "gopkg.in/gin-gonic/gin.v1"
+	validator "gopkg.in/go-playground/validator.v9"
+
+	"github.com/fetzi/styx"
+	"github.com/fetzi/styx/config"
+	"github.com/fetzi/styx/handler"
+	"github.com/fetzi/styx/resource"
+	"github.com/fetzi/styx/service"
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -25,34 +24,27 @@ func main() {
 	}
 
 	db, err := gorm.Open(config.Storage.Driver, config.Storage.Config)
-
 	if err != nil {
 		log.Fatal(err)
-		return
 	}
-
 	defer db.Close()
 
-	queue, err := queue.NewConnection(config.Queue.Host, config.Queue.Port, config.Queue.Username, config.Queue.Password)
+	v := validator.New()
 
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+	aStore := styx.GetAttachmentStore(config.Files, db)
 
-	defer queue.Close()
+	aResource := resource.DbAttachment{DB: db}
+	aResource.Init()
+	aService := service.Attachment{Resource: aResource}
 
-	router := gin.Default()
-	api := api2go.NewAPIWithRouting(
-		"",
-		api2go.NewStaticResolver("/"),
-		gingonic.New(router),
-	)
+	aHandler := handler.Attachment{Validate: v, Service: aService}
+	uHandler := handler.Upload{Service: aService, Store: aStore}
 
-	mailStatusStorage := storage.NewMailStatusStorage(db)
+	r := mux.NewRouter()
+	r.Handle("/attachments", aHandler).Methods("POST")
+	r.Handle("/attachments/{id}", aHandler).Methods("GET")
 
-	api.AddResource(model.Mail{}, resource.MailResource{&mailStatusStorage, queue, config.Queue.QueueName})
-
-	router.Run(fmt.Sprintf(":%d", config.HTTP.Port))
-
+	r.Handle("/upload/{id}", uHandler).Methods("POST")
+	http.Handle("/", r)
+	log.Fatal(http.ListenAndServe(":9999", nil))
 }

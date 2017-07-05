@@ -1,5 +1,5 @@
-hash: 9d2528319265cd085bfae855e60e4f321ec3a873ce3352e390ef7e4fb05906aa
-updated: 2017-06-16T09:53:05.864064745Z
+hash: 0341f65535ae027f31ed9b3167c0a695c876b2e5a08210ad0002f0fd373af299
+updated: 2017-06-29T21:25:06.414312209+02:00
 imports:
 - name: github.com/gedex/inflector
   version: 16278e9db8130ac7ec405dc174cfb94344f16325
@@ -16,8 +16,14 @@ imports:
   version: 2402d76f3d41f928c7902a765dfc872356dd3aad
   subpackages:
   - proto
+- name: github.com/google/jsonapi
+  version: cf83b97b3d901cd65deb0150e55f6bfa9898b71f
 - name: github.com/google/uuid
   version: 064e2069ce9c359c118179501254f67d7d37ba24
+- name: github.com/gorilla/context
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+- name: github.com/gorilla/mux
+  version: 8c683ee571b6ee7ffc9f1cafd13103c422e71cbf
 - name: github.com/jinzhu/gorm
   version: 5174cc5c242a728b435ea2be8a2f7f998e15429b
   subpackages:
@@ -44,6 +50,10 @@ imports:
   version: ca5e3819723d8eeaf170ad510e7da1d6d2e94a08
 - name: github.com/Slemgrim/gorage
   version: 00f164c5e6930a6a05d25ee76a85dc17c2bdaf01
+  subpackages:
+  - meta
+  - relation
+  - storage
 - name: github.com/streadway/amqp
   version: 1c63b162b69cf6834e0b30e496c4cd5d6ee2a1d1
 - name: golang.org/x/net
@@ -60,6 +70,8 @@ imports:
   version: e2212d40c62a98b388a5eb48ecbdcf88534688ba
 - name: gopkg.in/go-playground/validator.v8
   version: c193cecd124b5cc722d7ee5538e945bdb3348435
+- name: gopkg.in/go-playground/validator.v9
+  version: fb68f39656d7ebf8aa339ad4917aa0c260ecc237
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
 testImports: []
