@@ -7,9 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/fetzi/styx/mailer"
-	"github.com/fetzi/styx/model"
-	"github.com/fetzi/styx/queue"
+	"github.com/slemgrim/styx/mailer"
+	"github.com/slemgrim/styx/model"
+	"github.com/slemgrim/styx/queue"
 	"github.com/jinzhu/gorm"
 )
 

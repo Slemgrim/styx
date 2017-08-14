@@ -1,6 +1,6 @@
 package storage
 
-import "github.com/fetzi/styx/model"
+import "github.com/slemgrim/styx/model"
 
 // MailStorage tba
 type MailStorage struct {

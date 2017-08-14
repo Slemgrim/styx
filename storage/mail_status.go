@@ -3,7 +3,7 @@ package storage
 import (
 	"fmt"
 
-	"github.com/fetzi/styx/model"
+	"github.com/slemgrim/styx/model"
 	"github.com/jinzhu/gorm"
 )
 

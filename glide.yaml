@@ -1,4 +1,4 @@
-package: github.com/fetzi/styx
+package: github.com/slemgrim/styx
 import:
 - package: github.com/manyminds/api2go-adapter
   subpackages:

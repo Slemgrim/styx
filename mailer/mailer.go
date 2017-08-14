@@ -2,8 +2,8 @@ package mailer
 
 import (
 	"fmt"
-	"github.com/fetzi/styx/config"
-	"github.com/fetzi/styx/model"
+	"github.com/slemgrim/styx/config"
+	"github.com/slemgrim/styx/model"
 	"github.com/go-gomail/gomail"
 	"errors"
 	"os"

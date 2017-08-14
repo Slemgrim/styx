@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fetzi/styx/model"
-	"github.com/fetzi/styx/queue"
-	"github.com/fetzi/styx/storage"
+	"github.com/slemgrim/styx/model"
+	"github.com/slemgrim/styx/queue"
+	"github.com/slemgrim/styx/storage"
 	"github.com/google/uuid"
 	"github.com/manyminds/api2go"
 )
