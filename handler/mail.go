@@ -6,20 +6,20 @@ import (
 	"github.com/slemgrim/styx/model"
 	"github.com/slemgrim/styx/service"
 	"github.com/Slemgrim/jsonapi"
-	"github.com/gorilla/mux"
+	//"github.com/gorilla/mux"
 
 	validator "gopkg.in/go-playground/validator.v9"
 	"log"
 )
 
-type Attachment struct {
+type Mail struct {
 	Validator *validator.Validate
 	Service  service.Attachment
 
 	JsonApi
 }
 
-func (a Attachment) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (a Mail) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.setMediaType(w)
 	errors := a.validateJsonApiHeaders(r)
 	if len(errors) > 0 {
@@ -30,12 +30,12 @@ func (a Attachment) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	status := http.StatusOK
 	var err error
-	var payload model.Attachment
+	var payload model.Mail
 
 	if r.Method == "POST" {
-		status, payload, errors = a.createAttachment(r)
+		status, payload, errors = a.createMail(r)
 	} else {
-		status, payload, errors = a.getAttachment(r)
+		status, payload, errors = a.getMail(r)
 	}
 
 	w.WriteHeader(status)
@@ -54,8 +54,8 @@ func (a Attachment) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a Attachment) getAttachment(r *http.Request) (status int, payload model.Attachment, errors []*jsonapi.ErrorObject) {
-	vars := mux.Vars(r)
+func (a Mail) getMail(r *http.Request) (status int, payload model.Mail, errors []*jsonapi.ErrorObject) {
+	/*vars := mux.Vars(r)
 	id := vars["id"]
 
 	payload, err := a.Service.Load(id)
@@ -67,27 +67,28 @@ func (a Attachment) getAttachment(r *http.Request) (status int, payload model.At
 		})
 		return
 	}
-
+*/
 	return
 }
 
-func (a Attachment) createAttachment(r *http.Request) (status int, payload model.Attachment, errors []*jsonapi.ErrorObject) {
+func (a Mail) createMail(r *http.Request) (status int, payload model.Mail, errors []*jsonapi.ErrorObject) {
 
-	attachment := new(model.Attachment)
-	if er := a.Unmarshal(r.Body, attachment); er != nil {
+	mail := new(model.Mail)
+	if er := a.Unmarshal(r.Body, mail); er != nil {
 		errors =  append(errors, er)
 		status = http.StatusBadRequest
 		return
 	}
 
-	err := a.Validator.Struct(*attachment)
+	err := a.Validator.Struct(*mail)
 	if err != nil {
 		errors = a.HandleValidationErrors(err)
 		status = http.StatusBadRequest
 		return
 	}
 
-	payload, err = a.Service.Create(*attachment)
+	payload = *mail
+	//payload, err = a.Service.Create(*mail)
 
 	if err != nil {
 		return

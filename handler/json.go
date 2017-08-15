@@ -61,7 +61,7 @@ func (h *JsonApi) Unmarshal(r io.Reader, model interface{}) (error *jsonapi.Erro
 }
 
 
-func (a Attachment) HandleValidationErrors(errors error) (jsonErrors []*jsonapi.ErrorObject){
+func (a *JsonApi) HandleValidationErrors(errors error) (jsonErrors []*jsonapi.ErrorObject){
 
 	for _, err := range errors.(validator.ValidationErrors) {
 		jsonErrors = append(jsonErrors, &jsonapi.ErrorObject{

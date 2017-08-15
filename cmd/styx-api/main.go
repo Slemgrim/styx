@@ -39,11 +39,15 @@ func main() {
 
 	aHandler := handler.Attachment{Validator: v, Service: aService}
 	uHandler := handler.Upload{Service: aService, Store: aStore}
+	mHandler := handler.Mail{Validator: v, Service: aService}
+
 
 	r := mux.NewRouter()
 	r.Handle("/attachments", aHandler).Methods("POST")
 	r.Handle("/attachments/{id}", aHandler).Methods("GET")
 	r.Handle("/upload/{id}", uHandler).Methods("PUT")
+	r.Handle("/mails", mHandler).Methods("POST")
+	r.Handle("/mails/{id}", mHandler).Methods("GET")
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe(":9999", nil))
 }

@@ -63,6 +63,6 @@ func (a DbAttachment) Update(attachment model.Attachment) (model.Attachment, err
 }
 
 func (a DbAttachment) Delete(id string) error {
-	fmt.Println("Delete Attachment")
+	fmt.Println("Delete Mail")
 	return nil
 }
