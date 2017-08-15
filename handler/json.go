@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 	"strconv"
-	"github.com/google/jsonapi"
+	"github.com/Slemgrim/jsonapi"
 	"github.com/slemgrim/styx"
 	"io"
 	"fmt"

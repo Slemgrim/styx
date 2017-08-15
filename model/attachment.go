@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/jsonapi"
+	"github.com/Slemgrim/jsonapi"
 )
 
 type Attachment struct {

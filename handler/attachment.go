@@ -5,7 +5,7 @@ import (
 
 	"github.com/slemgrim/styx/model"
 	"github.com/slemgrim/styx/service"
-	"github.com/google/jsonapi"
+	"github.com/Slemgrim/jsonapi"
 	"github.com/gorilla/mux"
 
 	validator "gopkg.in/go-playground/validator.v9"
