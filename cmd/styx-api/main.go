@@ -8,11 +8,11 @@ import (
 	"github.com/jinzhu/gorm"
 	validator "gopkg.in/go-playground/validator.v9"
 
-	"github.com/fetzi/styx"
-	"github.com/fetzi/styx/config"
-	"github.com/fetzi/styx/handler"
-	"github.com/fetzi/styx/resource"
-	"github.com/fetzi/styx/service"
+	"github.com/slemgrim/styx"
+	"github.com/slemgrim/styx/config"
+	"github.com/slemgrim/styx/handler"
+	"github.com/slemgrim/styx/resource"
+	"github.com/slemgrim/styx/service"
 	"github.com/gorilla/mux"
 )
 
@@ -37,14 +37,13 @@ func main() {
 	aResource.Init()
 	aService := service.Attachment{Resource: aResource}
 
-	aHandler := handler.Attachment{Validate: v, Service: aService}
+	aHandler := handler.Attachment{Validator: v, Service: aService}
 	uHandler := handler.Upload{Service: aService, Store: aStore}
 
 	r := mux.NewRouter()
 	r.Handle("/attachments", aHandler).Methods("POST")
 	r.Handle("/attachments/{id}", aHandler).Methods("GET")
-
-	r.Handle("/upload/{id}", uHandler).Methods("POST")
+	r.Handle("/upload/{id}", uHandler).Methods("PUT")
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe(":9999", nil))
 }

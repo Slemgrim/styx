@@ -3,16 +3,17 @@ package handler
 import (
 	"net/http"
 
-	"github.com/fetzi/styx/model"
-	"github.com/fetzi/styx/service"
+	"github.com/slemgrim/styx/model"
+	"github.com/slemgrim/styx/service"
 	"github.com/google/jsonapi"
 	"github.com/gorilla/mux"
 
 	validator "gopkg.in/go-playground/validator.v9"
+	"fmt"
 )
 
 type Attachment struct {
-	Validate *validator.Validate
+	Validator *validator.Validate
 	Service  service.Attachment
 
 	JsonApi
@@ -20,71 +21,78 @@ type Attachment struct {
 
 func (a Attachment) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.setMediaType(w)
-	if !a.validateJsonApiHeaders(w, r) {
+	errors := a.validateJsonApiHeaders(r)
+	if len(errors) > 0 {
+		fmt.Println("header error")
+		w.WriteHeader(http.StatusBadRequest)
+		jsonapi.MarshalErrors(w, errors)
 		return
 	}
 
+	status := http.StatusOK
 	var err error
+	var payload model.Attachment
 
 	if r.Method == "POST" {
-		err = a.createAttachment(w, r)
+		status, payload, errors = a.createAttachment(r)
 	} else {
-		err = a.getAttachment(w, r)
+		status, payload, errors = a.getAttachment(r)
 	}
 
+	w.WriteHeader(status)
+
+	if(len(errors) > 0){
+		jsonapi.MarshalErrors(w, errors)
+		return
+	}
+
+	ptr := &payload
+	err = jsonapi.MarshalPayload(w, ptr)
+
 	if err != nil {
-		a.returnError(w, err, http.StatusInternalServerError)
+		fmt.Println(err)
 		return
 	}
 }
 
-func (a Attachment) getAttachment(w http.ResponseWriter, r *http.Request) error {
+func (a Attachment) getAttachment(r *http.Request) (status int, payload model.Attachment, errors []*jsonapi.ErrorObject) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
-	attachment, err := a.Service.Load(id)
+	payload, err := a.Service.Load(id)
 
 	if err != nil {
-		a.returnError(w, err, http.StatusNotFound)
+		status = http.StatusNotFound
+		errors =  append(errors, &jsonapi.ErrorObject{
+			Title: "Not Found",
+		})
+		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	err = jsonapi.MarshalOnePayload(w, &attachment)
-
-	return err
+	return
 }
 
-func (a Attachment) createAttachment(w http.ResponseWriter, r *http.Request) error {
+func (a Attachment) createAttachment(r *http.Request) (status int, payload model.Attachment, errors []*jsonapi.ErrorObject) {
+
 	attachment := new(model.Attachment)
-	err := jsonapi.UnmarshalPayload(r.Body, attachment)
-	if err != nil {
-		a.returnError(w, err, http.StatusInternalServerError)
+	if er := a.Unmarshal(r.Body, attachment); er != nil {
+		errors =  append(errors, er)
+		status = http.StatusBadRequest
+		return
 	}
 
-	err = a.validateAttachment(w, *attachment)
-
+	err := a.Validator.Struct(*attachment)
 	if err != nil {
-		a.returnError(w, err, http.StatusInternalServerError)
+		errors = a.HandleValidationErrors(err)
+		status = http.StatusBadRequest
+		return
 	}
 
-	newAttachment, err := a.Service.Create(*attachment)
+	payload, err = a.Service.Create(*attachment)
 
 	if err != nil {
-		a.returnError(w, err, http.StatusInternalServerError)
+		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	err = jsonapi.MarshalOnePayload(w, &newAttachment)
-
-	return err
-}
-
-func (a Attachment) validateAttachment(w http.ResponseWriter, attachment model.Attachment) error {
-	err := a.Validate.Struct(attachment)
-	if err != nil {
-		a.RetunValidationErros(w, err)
-		return err
-	}
-
-	return nil
+	return
 }

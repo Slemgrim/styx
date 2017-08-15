@@ -1,8 +1,6 @@
-package: github.com/fetzi/styx
+package: github.com/slemgrim/styx
 import:
-
 - package: github.com/gedex/inflector
-
 - package: github.com/jinzhu/gorm
   version: ^1.0.0
   subpackages:
@@ -21,3 +19,5 @@ import:
   version: ^0.1.0
 - package: gopkg.in/go-playground/validator.v9
   version: ^9.4.0
+- package: github.com/go-playground/universal-translator
+  version: ^0.16.0

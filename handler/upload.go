@@ -9,8 +9,8 @@ import (
 	"net/http"
 
 	"github.com/Slemgrim/gorage"
-	"github.com/fetzi/styx/model"
-	"github.com/fetzi/styx/service"
+	"github.com/slemgrim/styx/model"
+	"github.com/slemgrim/styx/service"
 	"github.com/gorilla/mux"
 )
 

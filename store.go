@@ -5,7 +5,7 @@ import (
 	"github.com/Slemgrim/gorage/meta"
 	"github.com/Slemgrim/gorage/relation"
 	"github.com/Slemgrim/gorage/storage"
-	"github.com/fetzi/styx/config"
+	"github.com/slemgrim/styx/config"
 	"github.com/jinzhu/gorm"
 )
 
