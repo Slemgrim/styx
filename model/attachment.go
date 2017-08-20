@@ -13,7 +13,7 @@ type Attachment struct {
 	Size       int    `jsonapi:"attr,size" validate:"required"`
 	FileName   string `jsonapi:"attr,file-name" validate:"required"`
 	MimeType   string `jsonapi:"attr,mime-type" validate:"required"`
-	Hash       string `jsonapi:"attr,hash" `
+	Hash       string `jsonapi:"attr,hash"`
 	CreatedAt  time.Time
 	LastUsedAt *time.Time
 	DeletedAt  *time.Time

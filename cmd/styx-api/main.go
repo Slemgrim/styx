@@ -14,6 +14,7 @@ import (
 	"github.com/slemgrim/styx/resource"
 	"github.com/slemgrim/styx/service"
 	"github.com/gorilla/mux"
+	"github.com/slemgrim/styx/model"
 )
 
 func main() {
@@ -30,6 +31,8 @@ func main() {
 	defer db.Close()
 
 	v := validator.New()
+	v.RegisterStructValidation(model.ValidateBody, model.Body{})
+	v.RegisterStructValidation(model.ValidateAddress, model.Address{})
 
 	aStore := styx.GetAttachmentStore(config.Files, db)
 
@@ -37,9 +40,13 @@ func main() {
 	aResource.Init()
 	aService := service.Attachment{Resource: aResource}
 
+	mResource := resource.DbMail{DB: db}
+	mResource.Init()
+	mService := service.Mail{Resource: mResource}
+
 	aHandler := handler.Attachment{Validator: v, Service: aService}
 	uHandler := handler.Upload{Service: aService, Store: aStore}
-	mHandler := handler.Mail{Validator: v, Service: aService}
+	mHandler := handler.Mail{Validator: v, Service: mService}
 
 
 	r := mux.NewRouter()

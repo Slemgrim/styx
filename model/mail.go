@@ -7,7 +7,7 @@ import (
 )
 
 type Mail struct {
-	ID         string `jsonapi:"primary,attachments" gorm:"primary_key"`
+	ID         string `jsonapi:"primary,mails" gorm:"primary_key"`
 	Subject    string `jsonapi:"attr,subject" validate:"required"`
 	Body	   Body `jsonapi:"attr,body" validate:"required,dive"`
 	Attachments []Attachment
@@ -22,8 +22,8 @@ type Mail struct {
 
 	Headers		[]Header `jsonapi:"attr,headers" validate:"dive"`
 
-	CreatedAt  time.Time
-	SentAt *time.Time
+	CreatedAt  time.Time `jsonapi:"attr,created-at,iso8601"`
+	SentAt *time.Time `jsonapi:"attr,sent-at,iso8601"`
 	DeletedAt  *time.Time
 }
 

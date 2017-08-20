@@ -14,7 +14,7 @@ import (
 
 type Mail struct {
 	Validator *validator.Validate
-	Service  service.Attachment
+	Service  service.Mail
 
 	JsonApi
 }
@@ -88,7 +88,7 @@ func (a Mail) createMail(r *http.Request) (status int, payload model.Mail, error
 	}
 
 	payload = *mail
-	//payload, err = a.Service.Create(*mail)
+	payload, err = a.Service.Create(*mail)
 
 	if err != nil {
 		return

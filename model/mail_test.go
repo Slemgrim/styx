@@ -91,7 +91,7 @@ func TestSubjectIsRequired(t *testing.T) {
 }
 
 
-func TestAtLeastOnToIsRequired(t *testing.T) {
+func TestAtLeastOneRecipientIsRequired(t *testing.T) {
 	address := Address{
 		Name: "Rick Sanchez",
 		Mail: "RickSanchez@example.com",
@@ -115,5 +115,5 @@ func TestAtLeastOnToIsRequired(t *testing.T) {
 }
 
 func TestFromIsRequired(t *testing.T) {
-	//To do
+	//Todo
 }
