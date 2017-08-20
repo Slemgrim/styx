@@ -6,7 +6,6 @@ import (
 	"github.com/slemgrim/styx/model"
 	"github.com/slemgrim/styx/resource"
 	"github.com/google/uuid"
-	"fmt"
 )
 
 /*
@@ -23,10 +22,8 @@ func (s Mail) Create(mail model.Mail) (model.Mail, error) {
 	var err error
 	mail.ID = uuid.New().String()
 	mail.CreatedAt = time.Now()
-	mail.SentAt = &time.Time{}
-	mail.DeletedAt = &time.Time{}
-
-	fmt.Println(mail.SentAt)
+	mail.SentAt = time.Time{}
+	mail.DeletedAt = time.Time{}
 
 	mail, err = s.Resource.Create(mail)
 
@@ -45,12 +42,4 @@ func (s Mail) Load(id string) (model.Mail, error) {
 	}
 
 	return mail, nil
-}
-
-/*
-	Delete a mail
-*/
-func (s Mail) Delete(mail model.Mail) error {
-	//Todo
-	return s.Resource.Delete(mail.ID)
 }

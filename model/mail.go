@@ -23,8 +23,8 @@ type Mail struct {
 	Headers		[]Header `jsonapi:"attr,headers" validate:"dive"`
 
 	CreatedAt  time.Time `jsonapi:"attr,created-at,iso8601"`
-	SentAt *time.Time `jsonapi:"attr,sent-at,iso8601"`
-	DeletedAt  *time.Time
+	SentAt time.Time `jsonapi:"attr,sent-at,iso8601"`
+	DeletedAt  time.Time
 }
 
 type Body struct {
@@ -34,7 +34,7 @@ type Body struct {
 
 type Address struct {
 	Name string `json:"name"`
-	Mail string `json:"mail"`
+	Address string `json:"address"`
 }
 
 type Header struct {
@@ -54,11 +54,11 @@ func ValidateBody(sl validator.StructLevel) {
 func ValidateAddress(sl validator.StructLevel) {
 	address := sl.Current().Interface().(Address)
 
-	if address.Mail == "" {
+	if address.Address == "" {
 		return
 	}
 
-	if err := checkmail.ValidateFormat(address.Mail); err != nil {
-		sl.ReportError(address.Mail, "Mail", "mail", "novalidemail", "")
+	if err := checkmail.ValidateFormat(address.Address); err != nil {
+		sl.ReportError(address.Address, "Mail", "mail", "novalidemail", "")
 	}
 }

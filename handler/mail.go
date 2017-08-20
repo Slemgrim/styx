@@ -10,6 +10,7 @@ import (
 
 	validator "gopkg.in/go-playground/validator.v9"
 	"log"
+	"github.com/gorilla/mux"
 )
 
 type Mail struct {
@@ -55,7 +56,7 @@ func (a Mail) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a Mail) getMail(r *http.Request) (status int, payload model.Mail, errors []*jsonapi.ErrorObject) {
-	/*vars := mux.Vars(r)
+	vars := mux.Vars(r)
 	id := vars["id"]
 
 	payload, err := a.Service.Load(id)
@@ -67,7 +68,7 @@ func (a Mail) getMail(r *http.Request) (status int, payload model.Mail, errors [
 		})
 		return
 	}
-*/
+
 	return
 }
 

@@ -22,6 +22,10 @@ func (a Attachment) Create(attachment model.Attachment) (model.Attachment, error
 	var err error
 	attachment.ID = uuid.New().String()
 	attachment.CreatedAt = time.Now()
+	attachment.DeletedAt = time.Time{}
+	attachment.LastUsedAt = time.Time{}
+	attachment.IsUploaded = false
+
 	attachment, err = a.Resource.Create(attachment)
 
 	return attachment, err
@@ -45,8 +49,9 @@ func (a Attachment) Load(id string) (model.Attachment, error) {
 	Delete an attachment
 */
 func (a Attachment) Delete(attachment model.Attachment) error {
-	//Todo
-	return a.Resource.Delete(attachment.ID)
+	attachment.DeletedAt = time.Now()
+	_, err := a.Resource.Update(attachment)
+	return err
 }
 
 /*
@@ -62,7 +67,6 @@ func (a Attachment) SetUploadedFile(attachment model.Attachment, fileId string) 
 	Mark an attachment as used so it can be deleted after some time
 */
 func (a Attachment) MarkAsUsed(attachment model.Attachment) error {
-	time := time.Now()
-	attachment.LastUsedAt = &time
+	attachment.LastUsedAt = time.Now()
 	return nil
 }

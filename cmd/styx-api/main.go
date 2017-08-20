@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
 	validator "gopkg.in/go-playground/validator.v9"
 
 	"github.com/slemgrim/styx"
@@ -15,6 +14,8 @@ import (
 	"github.com/slemgrim/styx/service"
 	"github.com/gorilla/mux"
 	"github.com/slemgrim/styx/model"
+	"github.com/jinzhu/gorm"
+	"gopkg.in/mgo.v2"
 )
 
 func main() {
@@ -24,30 +25,40 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db, err := gorm.Open(config.Storage.Driver, config.Storage.Config)
+	//Gorm needed for gorage package. We should change this in the future
+	gorm, err := gorm.Open(config.Storage.Driver, config.Storage.Config)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer gorm.Close()
+
+	mongoDBDialInfo := &mgo.DialInfo{
+		Addrs:    config.MongoDB.Address,
+		Database: config.MongoDB.Database,
+		Username: config.MongoDB.User,
+		Password: config.MongoDB.Password,
+	}
+
+	session, err := mgo.DialWithInfo(mongoDBDialInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
 
 	v := validator.New()
 	v.RegisterStructValidation(model.ValidateBody, model.Body{})
 	v.RegisterStructValidation(model.ValidateAddress, model.Address{})
 
-	aStore := styx.GetAttachmentStore(config.Files, db)
+	mResource := resource.MongoMail{Collection: session.DB("styx").C("mails")}
+	aResource := resource.MongoAttachment{Collection: session.DB("styx").C("attachments")}
 
-	aResource := resource.DbAttachment{DB: db}
-	aResource.Init()
+	aStore := styx.GetAttachmentStore(config.Files, gorm)
 	aService := service.Attachment{Resource: aResource}
-
-	mResource := resource.DbMail{DB: db}
-	mResource.Init()
 	mService := service.Mail{Resource: mResource}
 
 	aHandler := handler.Attachment{Validator: v, Service: aService}
 	uHandler := handler.Upload{Service: aService, Store: aStore}
 	mHandler := handler.Mail{Validator: v, Service: mService}
-
 
 	r := mux.NewRouter()
 	r.Handle("/attachments", aHandler).Methods("POST")

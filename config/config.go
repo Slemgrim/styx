@@ -9,6 +9,7 @@ import (
 type Config struct {
 	HTTP    HTTPConfig
 	Storage StorageConfig
+	MongoDB	MongoDBConfig
 	Queue   QueueConfig
 	SMTP    SMTPConfig
 	Files   FilesConfig
@@ -46,6 +47,13 @@ type SMTPConfig struct {
 type FilesConfig struct {
 	AttachmentPath string
 	BodyPath       string
+}
+
+type MongoDBConfig struct {
+	Address    []string
+	Database string
+	User	 string
+	Password string
 }
 
 // ReadConfig reads the json configuration values into the Config Struct

@@ -15,8 +15,8 @@ type Attachment struct {
 	MimeType   string `jsonapi:"attr,mime-type" validate:"required"`
 	Hash       string `jsonapi:"attr,hash"`
 	CreatedAt  time.Time
-	LastUsedAt *time.Time
-	DeletedAt  *time.Time
+	LastUsedAt time.Time
+	DeletedAt  time.Time
 	IsUploaded bool `jsonapi:"attr,is-uploaded" `
 }
 

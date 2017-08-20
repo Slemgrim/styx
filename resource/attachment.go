@@ -1,68 +1,49 @@
 package resource
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/slemgrim/styx/model"
-
-	"github.com/jinzhu/gorm"
+	"gopkg.in/mgo.v2"
+	"log"
+	"gopkg.in/mgo.v2/bson"
+	"time"
 )
 
 type Attachment interface {
 	Create(attachment model.Attachment) (model.Attachment, error)
 	Read(id string) (model.Attachment, error)
 	Update(model.Attachment) (model.Attachment, error)
-	Delete(id string) error
 }
 
-type DbAttachment struct {
-	DB *gorm.DB
+type MongoAttachment struct {
+	Collection *mgo.Collection
 }
 
-func (a DbAttachment) Init() {
-	a.DB.AutoMigrate(&model.Attachment{})
-}
+func (a MongoAttachment) Create(attachment model.Attachment) (model.Attachment, error) {
+	err := a.Collection.Insert(&attachment)
 
-func (a DbAttachment) Create(attachment model.Attachment) (model.Attachment, error) {
-	result := a.DB.Create(attachment)
-
-	if result.Error != nil {
-		return model.Attachment{}, result.Error
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	return attachment, nil
 }
 
-func (a DbAttachment) Read(id string) (model.Attachment, error) {
+func (a MongoAttachment) Read(id string) (model.Attachment, error) {
+
 	attachment := model.Attachment{}
-
-	notFound := a.DB.Where(model.Attachment{
-		ID:        id,
-		DeletedAt: nil,
-	}, id).First(&attachment).RecordNotFound()
-
-	if notFound {
-
-		return model.Attachment{}, errors.New("attachment not found")
+	err := a.Collection.Find(bson.M{"id": id, "deletedat": time.Time{}}).One(&attachment)
+	if err != nil {
+		return attachment, err
 	}
 
 	return attachment, nil
-
 }
 
-func (a DbAttachment) Update(attachment model.Attachment) (model.Attachment, error) {
-	result := a.DB.Save(&attachment)
-
-	if result.Error != nil {
-		return model.Attachment{}, result.Error
+func (a MongoAttachment) Update(attachment model.Attachment) (model.Attachment, error) {
+	err := a.Collection.Update(bson.M{"id": attachment.ID, "deletedat": time.Time{}}, attachment)
+	if err != nil {
+		return attachment, err
 	}
 
 	return attachment, nil
-
-}
-
-func (a DbAttachment) Delete(id string) error {
-	fmt.Println("Delete Mail")
-	return nil
 }

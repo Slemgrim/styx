@@ -1,68 +1,48 @@
 package resource
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/slemgrim/styx/model"
-
-	"github.com/jinzhu/gorm"
+	"gopkg.in/mgo.v2"
+	"log"
+	"gopkg.in/mgo.v2/bson"
+	"time"
 )
 
 type Mail interface {
 	Create(mail model.Mail) (model.Mail, error)
 	Read(id string) (model.Mail, error)
 	Update(model.Mail) (model.Mail, error)
-	Delete(id string) error
 }
 
-type DbMail struct {
-	DB *gorm.DB
+type MongoMail struct {
+	Collection *mgo.Collection
 }
 
-func (a DbMail) Init() {
-	a.DB.AutoMigrate(&model.Mail{})
-}
+func (a MongoMail) Create(mail model.Mail) (model.Mail, error) {
+	err := a.Collection.Insert(&mail)
 
-func (a DbMail) Create(mail model.Mail) (model.Mail, error) {
-	result := a.DB.Create(mail)
-
-	if result.Error != nil {
-		return model.Mail{}, result.Error
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	return mail, nil
 }
 
-func (a DbMail) Read(id string) (model.Mail, error) {
+func (a MongoMail) Read(id string) (model.Mail, error) {
 	mail := model.Mail{}
-
-	notFound := a.DB.Where(model.Mail{
-		ID:        id,
-		DeletedAt: nil,
-	}, id).First(&mail).RecordNotFound()
-
-	if notFound {
-
-		return model.Mail{}, errors.New("mail not found")
+	err := a.Collection.Find(bson.M{"id": id, "deletedat": time.Time{}}).One(&mail)
+	if err != nil {
+		return mail, err
 	}
 
 	return mail, nil
-
 }
 
-func (a DbMail) Update(mail model.Mail) (model.Mail, error) {
-	result := a.DB.Save(&mail)
-
-	if result.Error != nil {
-		return model.Mail{}, result.Error
+func (a MongoMail) Update(mail model.Mail) (model.Mail, error) {
+	err := a.Collection.Update(bson.M{"id": mail.ID, "deletedat": time.Time{}}, mail)
+	if err != nil {
+		return mail, err
 	}
 
 	return mail, nil
-
-}
-
-func (a DbMail) Delete(id string) error {
-	fmt.Println("Delete Mail")
-	return nil
 }

@@ -21,5 +21,8 @@ import:
   version: ^9.4.0
 - package: github.com/go-playground/universal-translator
   version: ^0.16.0
-- package: github.com/slemgrim/jsonapi
+- package: github.com/Slemgrim/jsonapi
 - package: github.com/badoux/checkmail
+- package: gopkg.in/mgo.v2
+  subpackages:
+  - bson

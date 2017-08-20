@@ -1,10 +1,14 @@
-hash: 8d9228164f00f2c4b720fc67fd66384d34cd17b085d9afedb39e5c773484d98f
-updated: 2017-08-15T21:52:21.2283221+02:00
+hash: c7d344d94c3f11b5cf157a9d00d7bcc375b9670bf6a5f61245bd4a0d78836708
+updated: 2017-08-20T16:55:57.6063442+02:00
 imports:
+- name: github.com/badoux/checkmail
+  version: d0a759655d62bcdc95c50a0676f3e9702ed59453
 - name: github.com/gedex/inflector
   version: 16278e9db8130ac7ec405dc174cfb94344f16325
 - name: github.com/go-gomail/gomail
   version: 81ebce5c23dfd25c6c67194b37d3dd3f338c98b1
+- name: github.com/go-mgo/mgo
+  version: ac340de385459c6fec994606fb457b6ffe69d55f
 - name: github.com/go-playground/locales
   version: 1e5f1161c6416a5ff48840eb8724a394e48cc534
   subpackages:
@@ -34,10 +38,26 @@ imports:
   - meta
   - relation
   - storage
-- name: github.com/slemgrim/jsonapi
+- name: github.com/Slemgrim/jsonapi
   version: fc6968dfe7f254d8285e5ba958f5f6d5514c7436
 - name: github.com/streadway/amqp
   version: 1c63b162b69cf6834e0b30e496c4cd5d6ee2a1d1
+- name: gopkg.in/alexcesaro/quotedprintable.v3
+  version: 2caba252f4dc53eaf6b553000885530023f54623
 - name: gopkg.in/go-playground/validator.v9
   version: d529ee1b0f30352444f507cc6cdac96bfd12decc
+- name: gopkg.in/mgo.v2
+  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
+  subpackages:
+  - bson
+  - internal/json
+  - internal/sasl
+  - internal/scram
+- name: gopkg.in/mgo.v2-unstable
+  version: ac340de385459c6fec994606fb457b6ffe69d55f
+  subpackages:
+  - bson
+  - internal/json
+  - internal/sasl
+  - internal/scram
 testImports: []
