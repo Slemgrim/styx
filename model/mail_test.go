@@ -19,7 +19,7 @@ func TestMain(m *testing.M){
 func TestMinimalMail(t *testing.T) {
 	address := Address{
 		Name: "Rick Sanchez",
-		Mail: "RickSanchez@example.com",
+		Address: "RickSanchez@example.com",
 	}
 
 	to := []Address{}
@@ -46,7 +46,7 @@ func TestMinimalMail(t *testing.T) {
 func TestBodyIsRequired(t *testing.T) {
 	address := Address{
 		Name: "Rick Sanchez",
-		Mail: "RickSanchez@example.com",
+		Address: "RickSanchez@example.com",
 	}
 
 	to := []Address{}
@@ -67,7 +67,7 @@ func TestBodyIsRequired(t *testing.T) {
 func TestSubjectIsRequired(t *testing.T) {
 	address := Address{
 		Name: "Rick Sanchez",
-		Mail: "RickSanchez@example.com",
+		Address: "RickSanchez@example.com",
 	}
 
 	to := []Address{}
@@ -94,7 +94,7 @@ func TestSubjectIsRequired(t *testing.T) {
 func TestAtLeastOneRecipientIsRequired(t *testing.T) {
 	address := Address{
 		Name: "Rick Sanchez",
-		Mail: "RickSanchez@example.com",
+		Address: "RickSanchez@example.com",
 	}
 
 	body := Body{
