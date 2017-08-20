@@ -11,6 +11,7 @@ import (
 	validator "gopkg.in/go-playground/validator.v9"
 	"log"
 	"github.com/gorilla/mux"
+	"fmt"
 )
 
 type Mail struct {
@@ -92,6 +93,9 @@ func (a Mail) createMail(r *http.Request) (status int, payload model.Mail, error
 	payload, err = a.Service.Create(*mail)
 
 	if err != nil {
+		fmt.Println(err)
+		errors =  append(errors, a.Error(err))
+		status = http.StatusBadRequest
 		return
 	}
 

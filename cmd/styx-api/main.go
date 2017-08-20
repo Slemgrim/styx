@@ -54,7 +54,10 @@ func main() {
 
 	aStore := styx.GetAttachmentStore(config.Files, gorm)
 	aService := service.Attachment{Resource: aResource}
-	mService := service.Mail{Resource: mResource}
+	mService := service.Mail{
+		MailResource: mResource,
+		AttachmentResource: aResource,
+	}
 
 	aHandler := handler.Attachment{Validator: v, Service: aService}
 	uHandler := handler.Upload{Service: aService, Store: aStore}

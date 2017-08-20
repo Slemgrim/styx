@@ -6,6 +6,8 @@ import (
 	"log"
 	"gopkg.in/mgo.v2/bson"
 	"time"
+	"errors"
+	"fmt"
 )
 
 type Attachment interface {
@@ -33,7 +35,7 @@ func (a MongoAttachment) Read(id string) (model.Attachment, error) {
 	attachment := model.Attachment{}
 	err := a.Collection.Find(bson.M{"id": id, "deletedat": time.Time{}}).One(&attachment)
 	if err != nil {
-		return attachment, err
+		return attachment, errors.New(fmt.Sprintf("Attachment %s not found", id))
 	}
 
 	return attachment, nil
@@ -42,7 +44,7 @@ func (a MongoAttachment) Read(id string) (model.Attachment, error) {
 func (a MongoAttachment) Update(attachment model.Attachment) (model.Attachment, error) {
 	err := a.Collection.Update(bson.M{"id": attachment.ID, "deletedat": time.Time{}}, attachment)
 	if err != nil {
-		return attachment, err
+		return attachment, errors.New(fmt.Sprintf("Attachment %s not found", attachment.ID))
 	}
 
 	return attachment, nil

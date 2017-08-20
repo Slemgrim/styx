@@ -6,6 +6,8 @@ import (
 	"log"
 	"gopkg.in/mgo.v2/bson"
 	"time"
+	"errors"
+	"fmt"
 )
 
 type Mail interface {
@@ -32,7 +34,7 @@ func (a MongoMail) Read(id string) (model.Mail, error) {
 	mail := model.Mail{}
 	err := a.Collection.Find(bson.M{"id": id, "deletedat": time.Time{}}).One(&mail)
 	if err != nil {
-		return mail, err
+		return mail, errors.New(fmt.Sprintf("Mail %s not found", id))
 	}
 
 	return mail, nil
@@ -41,7 +43,7 @@ func (a MongoMail) Read(id string) (model.Mail, error) {
 func (a MongoMail) Update(mail model.Mail) (model.Mail, error) {
 	err := a.Collection.Update(bson.M{"id": mail.ID, "deletedat": time.Time{}}, mail)
 	if err != nil {
-		return mail, err
+		return mail,  errors.New(fmt.Sprintf("Mail %s not found", mail.ID))
 	}
 
 	return mail, nil

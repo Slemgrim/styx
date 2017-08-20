@@ -10,7 +10,6 @@ type Mail struct {
 	ID         string `jsonapi:"primary,mails" gorm:"primary_key"`
 	Subject    string `jsonapi:"attr,subject" validate:"required"`
 	Body	   Body `jsonapi:"attr,body" validate:"required,dive"`
-	Attachments []Attachment
 
 	To			[]Address `jsonapi:"attr,to" validate:"required,dive,required,gte=1"`
 	Cc			[]Address `jsonapi:"attr,cc" validate:"dive"`
@@ -21,6 +20,8 @@ type Mail struct {
 	ReturnPath	Address `jsonapi:"attr,return-path" validate:"omitempty"`
 
 	Headers		[]Header `jsonapi:"attr,headers" validate:"dive"`
+
+	Attachments []*Attachment `jsonapi:"relation,attachments"`
 
 	CreatedAt  time.Time `jsonapi:"attr,created-at,iso8601"`
 	SentAt time.Time `jsonapi:"attr,sent-at,iso8601"`
@@ -62,3 +63,4 @@ func ValidateAddress(sl validator.StructLevel) {
 		sl.ReportError(address.Address, "Mail", "mail", "novalidemail", "")
 	}
 }
+

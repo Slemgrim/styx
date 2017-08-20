@@ -6,13 +6,16 @@ import (
 	"github.com/slemgrim/styx/model"
 	"github.com/slemgrim/styx/resource"
 	"github.com/google/uuid"
+	"fmt"
+	"errors"
 )
 
 /*
 	Service for handling mails
 */
 type Mail struct {
-	Resource resource.Mail
+	MailResource resource.Mail
+	AttachmentResource resource.Attachment
 }
 
 /*
@@ -20,12 +23,28 @@ type Mail struct {
 */
 func (s Mail) Create(mail model.Mail) (model.Mail, error) {
 	var err error
+
+	var attachments []*model.Attachment
+	for _, attachment := range mail.Attachments {
+		a, err := s.AttachmentResource.Read(attachment.ID)
+		if err != nil{
+			return mail, err
+		}
+
+		if !a.IsUploaded {
+			return mail, errors.New(fmt.Sprintf("Attachment %s was not uploaded yet", attachment.ID))
+		}
+
+		attachments = append(attachments, &a)
+	}
+
+	mail.Attachments = attachments
 	mail.ID = uuid.New().String()
 	mail.CreatedAt = time.Now()
 	mail.SentAt = time.Time{}
 	mail.DeletedAt = time.Time{}
 
-	mail, err = s.Resource.Create(mail)
+	mail, err = s.MailResource.Create(mail)
 
 	return mail, err
 }
@@ -35,7 +54,7 @@ func (s Mail) Create(mail model.Mail) (model.Mail, error) {
 */
 func (s Mail) Load(id string) (model.Mail, error) {
 
-	mail, err := s.Resource.Read(id)
+	mail, err := s.MailResource.Read(id)
 
 	if err != nil {
 		return model.Mail{}, err

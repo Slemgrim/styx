@@ -60,6 +60,17 @@ func (h *JsonApi) Unmarshal(r io.Reader, model interface{}) (error *jsonapi.Erro
 	return nil
 }
 
+func (h *JsonApi) Error(err error) (error *jsonapi.ErrorObject) {
+	if err != nil {
+		error = new(jsonapi.ErrorObject)
+		error.Title = err.Error()
+		return
+	}
+
+	return nil
+}
+
+
 
 func (a *JsonApi) HandleValidationErrors(errors error) (jsonErrors []*jsonapi.ErrorObject){
 
