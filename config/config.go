@@ -39,7 +39,6 @@ type SMTPConfig struct {
 
 type FilesConfig struct {
 	AttachmentPath string
-	BodyPath       string
 }
 
 type MongoDBConfig struct {

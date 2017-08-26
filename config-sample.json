@@ -16,8 +16,7 @@
         "password": "pass"
     },
     "files": {
-        "attachmentPath": "./temp/attachments",
-        "bodyPath": "./temp/attachments"
+        "attachmentPath": "./temp/attachments"
     },
     "mongoDB": {
         "address": ["12.34.56.78:9123"],

@@ -9,21 +9,6 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-func GetBodyStore(config config.FilesConfig, database *mgo.Database) *gorage.Gorage {
-	s := storage.Io{
-		BasePath:   config.BodyPath,
-		DirLength:  6,
-		BufferSize: 1024,
-	}
-
-	r := relation.Mongo{Collection: database.C("body_relation")}
-	m := meta.Mongo{Collection: database.C("body_meta")}
-
-	gorage := gorage.NewGorage(s, r, m)
-
-	return gorage
-}
-
 func GetAttachmentStore(config config.FilesConfig, database *mgo.Database) *gorage.Gorage {
 	s := storage.Io{
 		BasePath:   config.AttachmentPath,
