@@ -7,14 +7,13 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	validator "gopkg.in/go-playground/validator.v9"
 
-	"github.com/slemgrim/styx"
-	"github.com/slemgrim/styx/config"
-	"github.com/slemgrim/styx/handler"
-	"github.com/slemgrim/styx/resource"
-	"github.com/slemgrim/styx/service"
+	"github.com/Slemgrim/styx"
+	"github.com/Slemgrim/styx/config"
+	"github.com/Slemgrim/styx/handler"
+	"github.com/Slemgrim/styx/model"
+	"github.com/Slemgrim/styx/resource"
+	"github.com/Slemgrim/styx/service"
 	"github.com/gorilla/mux"
-	"github.com/slemgrim/styx/model"
-	"github.com/jinzhu/gorm"
 	"gopkg.in/mgo.v2"
 )
 
@@ -25,13 +24,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//Gorm needed for gorage package. We should change this in the future
-	gorm, err := gorm.Open(config.Storage.Driver, config.Storage.Config)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer gorm.Close()
-
 	mongoDBDialInfo := &mgo.DialInfo{
 		Addrs:    config.MongoDB.Address,
 		Database: config.MongoDB.Database,
@@ -40,6 +32,7 @@ func main() {
 	}
 
 	session, err := mgo.DialWithInfo(mongoDBDialInfo)
+	db := session.DB("styx")
 	if err != nil {
 		panic(err)
 	}
@@ -49,13 +42,13 @@ func main() {
 	v.RegisterStructValidation(model.ValidateBody, model.Body{})
 	v.RegisterStructValidation(model.ValidateAddress, model.Address{})
 
-	mResource := resource.MongoMail{Collection: session.DB("styx").C("mails")}
-	aResource := resource.MongoAttachment{Collection: session.DB("styx").C("attachments")}
+	mResource := resource.MongoMail{Collection: db.C("mails")}
+	aResource := resource.MongoAttachment{Collection: db.C("attachments")}
 
-	aStore := styx.GetAttachmentStore(config.Files, gorm)
+	aStore := styx.GetAttachmentStore(config.Files, db)
 	aService := service.Attachment{Resource: aResource}
 	mService := service.Mail{
-		MailResource: mResource,
+		MailResource:       mResource,
 		AttachmentResource: aResource,
 	}
 

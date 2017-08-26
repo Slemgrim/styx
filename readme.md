@@ -16,15 +16,6 @@ Url: `http://localhost:15672` - guest/guest
 ## Access to Mailcatcher
 Url: `http://localhost:1080`
 
-## Local Development
-To be able to use sqlite on the local machine, please make sure to add the following import in the `main.go` files for styx-api and styx-worker.
-
-```
-_ "github.com/jinzhu/gorm/dialects/sqlite"
-```
-
-This import is not there by default because it is breaking the build of the linux version.
-
 # API
 
 Submit an E-Mail:

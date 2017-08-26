@@ -8,8 +8,7 @@ import (
 // Config defines the application configuration
 type Config struct {
 	HTTP    HTTPConfig
-	Storage StorageConfig
-	MongoDB	MongoDBConfig
+	MongoDB MongoDBConfig
 	Queue   QueueConfig
 	SMTP    SMTPConfig
 	Files   FilesConfig
@@ -18,12 +17,6 @@ type Config struct {
 // HTTPConfig defines the configuration for the http api
 type HTTPConfig struct {
 	Port int
-}
-
-// StorageConfig defines the database storage information
-type StorageConfig struct {
-	Driver string
-	Config string
 }
 
 // QueueConfig defines the rabbit mq connection information
@@ -50,9 +43,9 @@ type FilesConfig struct {
 }
 
 type MongoDBConfig struct {
-	Address    []string
+	Address  []string
 	Database string
-	User	 string
+	User     string
 	Password string
 }
 

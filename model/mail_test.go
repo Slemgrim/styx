@@ -9,7 +9,7 @@ import (
 
 var v *validator.Validate = validator.New()
 
-func TestMain(m *testing.M){
+func TestMain(m *testing.M) {
 	v.RegisterStructValidation(ValidateBody, Body{})
 	v.RegisterStructValidation(ValidateAddress, Address{})
 
@@ -18,7 +18,7 @@ func TestMain(m *testing.M){
 
 func TestMinimalMail(t *testing.T) {
 	address := Address{
-		Name: "Rick Sanchez",
+		Name:    "Rick Sanchez",
 		Address: "RickSanchez@example.com",
 	}
 
@@ -26,15 +26,15 @@ func TestMinimalMail(t *testing.T) {
 	to = append(to, address)
 
 	body := Body{
-		HTML: "<h1>Eat lasers!<h1>",
+		HTML:  "<h1>Eat lasers!<h1>",
 		Plain: "Eat Lasers!",
 	}
 
 	mail := Mail{
 		Subject: "Eat Lasers!",
-		To: to,
-		From: address,
-		Body: body,
+		To:      to,
+		From:    address,
+		Body:    body,
 	}
 
 	err := v.Struct(mail)
@@ -45,7 +45,7 @@ func TestMinimalMail(t *testing.T) {
 
 func TestBodyIsRequired(t *testing.T) {
 	address := Address{
-		Name: "Rick Sanchez",
+		Name:    "Rick Sanchez",
 		Address: "RickSanchez@example.com",
 	}
 
@@ -54,8 +54,8 @@ func TestBodyIsRequired(t *testing.T) {
 
 	mail := Mail{
 		Subject: "Eat Lasers!",
-		To: to,
-		From: address,
+		To:      to,
+		From:    address,
 	}
 
 	err := v.Struct(mail)
@@ -66,7 +66,7 @@ func TestBodyIsRequired(t *testing.T) {
 
 func TestSubjectIsRequired(t *testing.T) {
 	address := Address{
-		Name: "Rick Sanchez",
+		Name:    "Rick Sanchez",
 		Address: "RickSanchez@example.com",
 	}
 
@@ -74,12 +74,12 @@ func TestSubjectIsRequired(t *testing.T) {
 	to = append(to, address)
 
 	body := Body{
-		HTML: "<h1>Eat lasers!<h1>",
+		HTML:  "<h1>Eat lasers!<h1>",
 		Plain: "Eat Lasers!",
 	}
 
 	mail := Mail{
-		To: to,
+		To:   to,
 		From: address,
 		Body: body,
 	}
@@ -90,22 +90,21 @@ func TestSubjectIsRequired(t *testing.T) {
 	}
 }
 
-
 func TestAtLeastOneRecipientIsRequired(t *testing.T) {
 	address := Address{
-		Name: "Rick Sanchez",
+		Name:    "Rick Sanchez",
 		Address: "RickSanchez@example.com",
 	}
 
 	body := Body{
-		HTML: "<h1>Eat lasers!<h1>",
+		HTML:  "<h1>Eat lasers!<h1>",
 		Plain: "Eat Lasers!",
 	}
 
 	mail := Mail{
 		Subject: "Eat Lasers!",
-		From: address,
-		Body: body,
+		From:    address,
+		Body:    body,
 	}
 
 	err := v.Struct(mail)

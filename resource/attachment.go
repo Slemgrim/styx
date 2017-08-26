@@ -1,13 +1,13 @@
 package resource
 
 import (
-	"github.com/slemgrim/styx/model"
-	"gopkg.in/mgo.v2"
-	"log"
-	"gopkg.in/mgo.v2/bson"
-	"time"
 	"errors"
 	"fmt"
+	"github.com/Slemgrim/styx/model"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	"log"
+	"time"
 )
 
 type Attachment interface {

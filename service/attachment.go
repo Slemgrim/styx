@@ -3,8 +3,8 @@ package service
 import (
 	"time"
 
-	"github.com/slemgrim/styx/model"
-	"github.com/slemgrim/styx/resource"
+	"github.com/Slemgrim/styx/model"
+	"github.com/Slemgrim/styx/resource"
 	"github.com/google/uuid"
 )
 

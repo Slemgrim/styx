@@ -1,13 +1,13 @@
 package resource
 
 import (
-	"github.com/slemgrim/styx/model"
-	"gopkg.in/mgo.v2"
-	"log"
-	"gopkg.in/mgo.v2/bson"
-	"time"
 	"errors"
 	"fmt"
+	"github.com/Slemgrim/styx/model"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	"log"
+	"time"
 )
 
 type Mail interface {
@@ -43,7 +43,7 @@ func (a MongoMail) Read(id string) (model.Mail, error) {
 func (a MongoMail) Update(mail model.Mail) (model.Mail, error) {
 	err := a.Collection.Update(bson.M{"id": mail.ID, "deletedat": time.Time{}}, mail)
 	if err != nil {
-		return mail,  errors.New(fmt.Sprintf("Mail %s not found", mail.ID))
+		return mail, errors.New(fmt.Sprintf("Mail %s not found", mail.ID))
 	}
 
 	return mail, nil

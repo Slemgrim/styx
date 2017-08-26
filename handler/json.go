@@ -1,13 +1,13 @@
 package handler
 
 import (
+	"fmt"
+	"github.com/Slemgrim/jsonapi"
+	"github.com/Slemgrim/styx"
+	"gopkg.in/go-playground/validator.v9"
+	"io"
 	"net/http"
 	"strconv"
-	"github.com/Slemgrim/jsonapi"
-	"github.com/slemgrim/styx"
-	"io"
-	"fmt"
-	"gopkg.in/go-playground/validator.v9"
 )
 
 type JsonApi struct{}
@@ -19,7 +19,7 @@ func (h *JsonApi) validateJsonApiHeaders(r *http.Request) []*jsonapi.ErrorObject
 		errors = append(errors, &jsonapi.ErrorObject{
 			Title:  "Unsupported Content Type",
 			Detail: "Given Content Type was not:" + jsonapi.MediaType,
-			Code: styx.ErrorWrongContentType,
+			Code:   styx.ErrorWrongContentType,
 		})
 	}
 
@@ -27,7 +27,7 @@ func (h *JsonApi) validateJsonApiHeaders(r *http.Request) []*jsonapi.ErrorObject
 		errors = append(errors, &jsonapi.ErrorObject{
 			Title:  "Response not supported",
 			Detail: "Client must support " + jsonapi.MediaType,
-			Code: styx.ErrorNotAccepted,
+			Code:   styx.ErrorNotAccepted,
 		})
 	}
 
@@ -70,9 +70,7 @@ func (h *JsonApi) Error(err error) (error *jsonapi.ErrorObject) {
 	return nil
 }
 
-
-
-func (a *JsonApi) HandleValidationErrors(errors error) (jsonErrors []*jsonapi.ErrorObject){
+func (a *JsonApi) HandleValidationErrors(errors error) (jsonErrors []*jsonapi.ErrorObject) {
 
 	for _, err := range errors.(validator.ValidationErrors) {
 		jsonErrors = append(jsonErrors, &jsonapi.ErrorObject{

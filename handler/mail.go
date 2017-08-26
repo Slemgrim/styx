@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"github.com/slemgrim/styx/model"
-	"github.com/slemgrim/styx/service"
+	"github.com/Slemgrim/styx/model"
+	"github.com/Slemgrim/styx/service"
 	"github.com/Slemgrim/jsonapi"
 	//"github.com/gorilla/mux"
 
