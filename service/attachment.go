@@ -3,9 +3,15 @@ package service
 import (
 	"time"
 
+	"crypto/sha1"
+	"encoding/binary"
+	"errors"
+	"fmt"
+	"github.com/Slemgrim/gorage"
 	"github.com/Slemgrim/styx/model"
 	"github.com/Slemgrim/styx/resource"
 	"github.com/google/uuid"
+	"net/http"
 )
 
 /*
@@ -13,6 +19,7 @@ import (
 */
 type Attachment struct {
 	Resource resource.Attachment
+	Store    *gorage.Gorage
 }
 
 /*
@@ -69,4 +76,43 @@ func (a Attachment) SetUploadedFile(attachment model.Attachment, fileId string) 
 func (a Attachment) MarkAsUsed(attachment model.Attachment) error {
 	attachment.LastUsedAt = time.Now()
 	return nil
+}
+
+func (a Attachment) ValidateFile(attachment model.Attachment, body []byte) error {
+	fileSize := binary.Size(body)
+	contentType := http.DetectContentType(body)
+	hash := a.CalculateHash(body)
+
+	if fileSize != attachment.Size {
+		return errors.New("Filesize doesn't match attachments size")
+	}
+
+	if contentType != attachment.MimeType {
+		return errors.New("Content type doesn't match attachments content type")
+	}
+
+	if hash != attachment.Hash {
+		return errors.New("File hash doesn't match attachments hash")
+	}
+
+	return nil
+}
+
+func (a Attachment) CalculateHash(body []byte) string {
+	h := sha1.New()
+	h.Write(body)
+	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+func (a Attachment) Upload(attachment model.Attachment, body []byte, context interface{}) error {
+
+	savedFile, err := a.Store.Save(attachment.FileName, body, nil)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = a.SetUploadedFile(attachment, savedFile.ID)
+
+	return err
 }
