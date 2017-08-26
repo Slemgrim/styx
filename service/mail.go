@@ -3,19 +3,22 @@ package service
 import (
 	"time"
 
+	"errors"
+	"fmt"
 	"github.com/Slemgrim/styx/model"
+	"github.com/Slemgrim/styx/queue"
 	"github.com/Slemgrim/styx/resource"
 	"github.com/google/uuid"
-	"fmt"
-	"errors"
+	"log"
 )
 
 /*
 	Service for handling mails
 */
 type Mail struct {
-	MailResource resource.Mail
+	MailResource       resource.Mail
 	AttachmentResource resource.Attachment
+	Connection         *queue.Connection
 }
 
 /*
@@ -27,7 +30,7 @@ func (s Mail) Create(mail model.Mail) (model.Mail, error) {
 	var attachments []*model.Attachment
 	for _, attachment := range mail.Attachments {
 		a, err := s.AttachmentResource.Read(attachment.ID)
-		if err != nil{
+		if err != nil {
 			return mail, err
 		}
 
@@ -46,7 +49,13 @@ func (s Mail) Create(mail model.Mail) (model.Mail, error) {
 
 	mail, err = s.MailResource.Create(mail)
 
-	return mail, err
+	if err != nil {
+		return mail, err
+	}
+
+	s.enqueue(mail)
+
+	return mail, nil
 }
 
 /*
@@ -61,4 +70,23 @@ func (s Mail) Load(id string) (model.Mail, error) {
 	}
 
 	return mail, nil
+}
+
+func (s Mail) enqueue(mail model.Mail) {
+	channel, err := s.Connection.Channel()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer channel.Close()
+
+	queue, err := channel.DeclareQueue("mail", false, false, false, false)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	channel.PublishAsJSON(queue, mail)
+
 }

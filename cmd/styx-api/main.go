@@ -11,6 +11,7 @@ import (
 	"github.com/Slemgrim/styx/config"
 	"github.com/Slemgrim/styx/handler"
 	"github.com/Slemgrim/styx/model"
+	"github.com/Slemgrim/styx/queue"
 	"github.com/Slemgrim/styx/resource"
 	"github.com/Slemgrim/styx/service"
 	"github.com/gorilla/mux"
@@ -23,6 +24,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	/**
+	 * Setup MongoDB
+	 */
 
 	mongoDBDialInfo := &mgo.DialInfo{
 		Addrs:    config.MongoDB.Address,
@@ -38,23 +43,50 @@ func main() {
 	}
 	defer session.Close()
 
+	mResource := resource.MongoMail{Collection: db.C("mails")}
+	aResource := resource.MongoAttachment{Collection: db.C("attachments")}
+
+	/**
+	 * Setup queueing system
+	 */
+
+	queue, err := queue.NewConnection(config.Queue.Host, config.Queue.Port, config.Queue.Username, config.Queue.Password)
+
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	defer queue.Close()
+
+	/**
+	 * Add Custom Validators
+	 */
+
 	v := validator.New()
 	v.RegisterStructValidation(model.ValidateBody, model.Body{})
 	v.RegisterStructValidation(model.ValidateAddress, model.Address{})
 
-	mResource := resource.MongoMail{Collection: db.C("mails")}
-	aResource := resource.MongoAttachment{Collection: db.C("attachments")}
+	/**
+	 * Register services
+	 */
 
 	aStore := styx.GetAttachmentStore(config.Files, db)
 	aService := service.Attachment{Resource: aResource}
+
 	mService := service.Mail{
 		MailResource:       mResource,
 		AttachmentResource: aResource,
+		Connection:         queue,
 	}
 
 	aHandler := handler.Attachment{Validator: v, Service: aService}
 	uHandler := handler.Upload{Service: aService, Store: aStore}
 	mHandler := handler.Mail{Validator: v, Service: mService}
+
+	/**
+	 * Setup routing
+	 */
 
 	r := mux.NewRouter()
 	r.Handle("/attachments", aHandler).Methods("POST")
