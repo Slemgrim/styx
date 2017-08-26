@@ -16,11 +16,11 @@
         "password": "pass"
     },
     "files": {
-        "attachmentsPath": "./temp/attachments",
+        "attachmentPath": "./temp/attachments",
         "bodyPath": "./temp/attachments"
     },
     "mongoDB": {
-        "address": ["10.10.10.10:1000"],
+        "address": ["12.34.56.78:9123"],
         "database": "styx",
         "user": "",
         "password": ""
