@@ -81,7 +81,7 @@ func (s Mail) enqueue(mail model.Mail) {
 
 	defer channel.Close()
 
-	queue, err := channel.DeclareQueue("mail", false, false, false, false)
+	queue, err := channel.DeclareQueue("mails", false, false, false, false)
 
 	if err != nil {
 		log.Fatal(err)
