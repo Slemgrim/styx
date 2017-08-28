@@ -19,7 +19,7 @@
         "attachmentPath": "./temp/attachments"
     },
     "mongoDB": {
-        "address": ["12.34.56.78:9123"],
+        "address": ["localhost:27017"],
         "database": "styx",
         "user": "",
         "password": ""

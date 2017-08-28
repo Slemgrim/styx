@@ -1,13 +1,9 @@
 # Installation
 
-this package requires the following docker images:
-
-* rabbitmq:3-management
-* mailcatcher
-
+To but up a basic environment use docker compose
 ```
-docker run -d --name styx-rabbit -p 5672:5672 -p 15672:15672 rabbitmq:3-management
-docker run -d --name styx-mailcatcher -p 1025:1025 -p 1080:1080 zolweb/docker-mailcatcher
+cp config-sample.json config.json
+docker-compose up
 ```
 
 ## Access to RabbitMQ
