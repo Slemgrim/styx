@@ -1,21 +1,25 @@
 package mailer
 
 import (
+	"bytes"
 	"errors"
+	"github.com/Slemgrim/gorage"
 	"github.com/Slemgrim/styx/config"
 	"github.com/Slemgrim/styx/model"
 	"github.com/go-gomail/gomail"
+	"io"
 	"time"
 )
 
 type Mailer struct {
 	Dialer *gomail.Dialer
+	Store  *gorage.Gorage
 }
 
 // Creates a new mailer instance
-func New(smtpConfig config.SMTPConfig) *Mailer {
+func New(smtpConfig config.SMTPConfig, store *gorage.Gorage) *Mailer {
 	dialer := gomail.NewDialer(smtpConfig.Host, smtpConfig.Port, smtpConfig.User, smtpConfig.Password)
-	return &Mailer{dialer}
+	return &Mailer{dialer, store}
 }
 
 // Send a mail
@@ -68,7 +72,7 @@ func (mailer *Mailer) Send(mail model.Mail) error {
 	message.SetHeader("styx-mail-uuid", mail.ID)
 	message.SetHeader("styx-mail-date", message.FormatDate(time.Now()))
 
-	//addAttachments(message, mail.Attachments, mailer)
+	mailer.addAttachments(message, mail.Attachments, mailer)
 
 	if err := mailer.Dialer.DialAndSend(message); err != nil {
 		return err
@@ -98,18 +102,22 @@ func getAddress(address model.Address, message *gomail.Message) (string, error) 
 	return message.FormatAddress(address.Address, address.Name), nil
 }
 
-/*
-func addAttachments(mail *gomail.Message, attachments []model.Attachment, mailer *Mailer) error {
+func (m *Mailer) addAttachments(mail *gomail.Message, attachments []*model.Attachment, mailer *Mailer) error {
 	if len(attachments) > 0 {
 		for _, attachment := range attachments {
-			file := fmt.Sprintf("%s/%s", mailer.AttachmentPath, attachment.FileName)
-			if _, err := os.Stat(file); os.IsNotExist(err) {
-				return errors.New(fmt.Sprintf("File '%s' doesn't exist", file))
-			}
 			attachmentIdHeader := map[string][]string{"styx-attachment-uuid": {attachment.ID}}
-			mail.Attach(file, gomail.Rename(attachment.OriginalName), gomail.SetHeader(attachmentIdHeader))
+			f, err := m.Store.Load(attachment.FileId)
+
+			if err != nil {
+				return err
+			}
+
+			r := bytes.NewBuffer(f.Content)
+			mail.Attach(attachment.FileName, gomail.SetCopyFunc(func(w io.Writer) error {
+				_, err := io.Copy(w, r)
+				return err
+			}), gomail.Rename(attachment.FileName), gomail.SetHeader(attachmentIdHeader))
 		}
 	}
 	return nil
 }
-*/

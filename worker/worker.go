@@ -15,10 +15,11 @@ import (
 )
 
 type Worker struct {
-	session     *mgo.Session
-	queue       *queue.Connection
-	mailer      *mailer.Mailer
-	mailService service.Mail
+	session           *mgo.Session
+	queue             *queue.Connection
+	mailer            *mailer.Mailer
+	mailService       service.Mail
+	attachmentService service.Attachment
 }
 
 func New(styx *styx.Styx) *Worker {
@@ -28,6 +29,7 @@ func New(styx *styx.Styx) *Worker {
 		styx.Queue,
 		styx.Mailer,
 		styx.MailService,
+		styx.AttachmentService,
 	}
 	return worker
 }
@@ -60,8 +62,9 @@ func (w *Worker) Start() error {
 
 	channel.Prefetch(20)
 	channel.Consume(q, "styx-consumer", mailConsumer{
-		Mailer:      w.mailer,
-		MailService: w.mailService,
+		mailer:            w.mailer,
+		mailService:       w.mailService,
+		attachmentService: w.attachmentService,
 	})
 
 	<-done
@@ -75,20 +78,21 @@ func (w *Worker) Stop() {
 }
 
 type mailConsumer struct {
-	Mailer      *mailer.Mailer
-	MailService service.Mail
+	mailer            *mailer.Mailer
+	mailService       service.Mail
+	attachmentService service.Attachment
 }
 
 func (c mailConsumer) Execute(message queue.Message) {
 	mail := model.Mail{}
 	message.ParseFromJSON(&mail)
 
-	err := c.Mailer.Send(mail)
+	err := c.mailer.Send(mail)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	c.MailService.MarkAsSent(mail.ID)
+	c.mailService.MarkAsSent(mail.ID)
 
 	message.Acknowledge()
 }

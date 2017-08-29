@@ -86,7 +86,7 @@ func New(config *config.Config) Styx {
 		Connection:         queue,
 	}
 
-	s.Mailer = mailer.New(config.SMTP)
+	s.Mailer = mailer.New(config.SMTP, aStore)
 
 	return s
 }
