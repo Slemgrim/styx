@@ -6,6 +6,7 @@ import (
 	"github.com/Slemgrim/styx/mailer"
 	"github.com/Slemgrim/styx/model"
 	"github.com/Slemgrim/styx/queue"
+	"github.com/Slemgrim/styx/service"
 	"gopkg.in/mgo.v2"
 	"log"
 	"os"
@@ -14,9 +15,10 @@ import (
 )
 
 type Worker struct {
-	session *mgo.Session
-	queue   *queue.Connection
-	mailer  *mailer.Mailer
+	session     *mgo.Session
+	queue       *queue.Connection
+	mailer      *mailer.Mailer
+	mailService service.Mail
 }
 
 func New(styx *styx.Styx) *Worker {
@@ -25,6 +27,7 @@ func New(styx *styx.Styx) *Worker {
 		styx.Session,
 		styx.Queue,
 		styx.Mailer,
+		styx.MailService,
 	}
 	return worker
 }
@@ -57,7 +60,8 @@ func (w *Worker) Start() error {
 
 	channel.Prefetch(20)
 	channel.Consume(q, "styx-consumer", mailConsumer{
-		Mailer: w.mailer,
+		Mailer:      w.mailer,
+		MailService: w.mailService,
 	})
 
 	<-done
@@ -71,7 +75,8 @@ func (w *Worker) Stop() {
 }
 
 type mailConsumer struct {
-	Mailer *mailer.Mailer
+	Mailer      *mailer.Mailer
+	MailService service.Mail
 }
 
 func (c mailConsumer) Execute(message queue.Message) {
@@ -82,6 +87,8 @@ func (c mailConsumer) Execute(message queue.Message) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	c.MailService.MarkAsSent(mail.ID)
 
 	message.Acknowledge()
 }

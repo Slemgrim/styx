@@ -88,5 +88,23 @@ func (s Mail) enqueue(mail model.Mail) {
 	}
 
 	channel.PublishAsJSON(queue, mail)
+}
 
+func (s Mail) MarkAsSent(id string) error {
+
+	mail, err := s.MailResource.Read(id)
+
+	if err != nil {
+		return err
+	}
+
+	mail.SentAt = time.Now()
+
+	_, err = s.MailResource.Update(mail)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
