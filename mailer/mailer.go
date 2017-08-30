@@ -72,7 +72,7 @@ func (mailer *Mailer) Send(mail model.Mail) error {
 	message.SetHeader("styx-mail-uuid", mail.ID)
 	message.SetHeader("styx-mail-date", message.FormatDate(time.Now()))
 
-	mailer.addAttachments(message, mail.Attachments, mailer)
+	mailer.addAttachments(message, mail.Attachments)
 
 	if err := mailer.Dialer.DialAndSend(message); err != nil {
 		return err
@@ -102,7 +102,7 @@ func getAddress(address model.Address, message *gomail.Message) (string, error) 
 	return message.FormatAddress(address.Address, address.Name), nil
 }
 
-func (m *Mailer) addAttachments(mail *gomail.Message, attachments []*model.Attachment, mailer *Mailer) error {
+func (m *Mailer) addAttachments(mail *gomail.Message, attachments []*model.Attachment) error {
 	if len(attachments) > 0 {
 		for _, attachment := range attachments {
 			attachmentIdHeader := map[string][]string{"styx-attachment-uuid": {attachment.ID}}

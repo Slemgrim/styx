@@ -73,9 +73,9 @@ func (a Attachment) SetUploadedFile(attachment model.Attachment, fileId string) 
 /*
 	Mark an attachment as used so it can be deleted after some time
 */
-func (a Attachment) MarkAsUsed(attachment model.Attachment) error {
+func (a Attachment) MarkAsUsed(attachment model.Attachment) (model.Attachment, error) {
 	attachment.LastUsedAt = time.Now()
-	return nil
+	return a.Resource.Update(attachment)
 }
 
 func (a Attachment) ValidateFile(attachment model.Attachment, body []byte) error {

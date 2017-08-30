@@ -74,7 +74,7 @@ func (w *Worker) Start() error {
 }
 
 func (w *Worker) Stop() {
-
+	//TODO
 }
 
 type mailConsumer struct {
@@ -93,6 +93,12 @@ func (c mailConsumer) Execute(message queue.Message) {
 	}
 
 	c.mailService.MarkAsSent(mail.ID)
+
+	if len(mail.Attachments) > 0 {
+		for _, attachment := range mail.Attachments {
+			c.attachmentService.MarkAsUsed(*attachment)
+		}
+	}
 
 	message.Acknowledge()
 }
