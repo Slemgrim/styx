@@ -1,4 +1,4 @@
-package: github.com/slemgrim/styx
+package: github.com/Slemgrim/styx
 import:
 - package: github.com/gedex/inflector
 - package: github.com/google/uuid

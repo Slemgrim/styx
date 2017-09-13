@@ -1,12 +1,13 @@
 package main
 
 import (
+	"log"
+	"net/http"
+
 	"github.com/Slemgrim/styx"
 	"github.com/Slemgrim/styx/config"
 	"github.com/Slemgrim/styx/handler"
 	"github.com/gorilla/mux"
-	"log"
-	"net/http"
 )
 
 func main() {
@@ -30,5 +31,5 @@ func main() {
 	r.Handle("/mails", mHandler).Methods("POST")
 	r.Handle("/mails/{id}", mHandler).Methods("GET")
 	http.Handle("/", r)
-	log.Fatal(http.ListenAndServe(":9999", nil))
+	log.Fatal(http.ListenAndServe(":"+config.HTTP.Port, nil))
 }

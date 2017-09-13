@@ -3,20 +3,19 @@ package handler
 import (
 	"net/http"
 
+	"fmt"
+	"log"
+
+	"github.com/Slemgrim/jsonapi"
 	"github.com/Slemgrim/styx/model"
 	"github.com/Slemgrim/styx/service"
-	"github.com/Slemgrim/jsonapi"
-	//"github.com/gorilla/mux"
-
-	validator "gopkg.in/go-playground/validator.v9"
-	"log"
 	"github.com/gorilla/mux"
-	"fmt"
+	validator "gopkg.in/go-playground/validator.v9"
 )
 
 type Mail struct {
 	Validator *validator.Validate
-	Service  service.Mail
+	Service   service.Mail
 
 	JsonApi
 }
@@ -42,7 +41,7 @@ func (a Mail) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(status)
 
-	if(len(errors) > 0){
+	if len(errors) > 0 {
 		jsonapi.MarshalErrors(w, errors)
 		return
 	}
@@ -65,7 +64,7 @@ func (a Mail) getMail(r *http.Request) (status int, payload model.Mail, errors [
 
 	if err != nil {
 		status = http.StatusNotFound
-		errors =  append(errors, &jsonapi.ErrorObject{
+		errors = append(errors, &jsonapi.ErrorObject{
 			Title: "Not Found",
 		})
 		return
@@ -78,7 +77,7 @@ func (a Mail) createMail(r *http.Request) (status int, payload model.Mail, error
 	status = http.StatusOK
 	mail := new(model.Mail)
 	if er := a.Unmarshal(r.Body, mail); er != nil {
-		errors =  append(errors, er)
+		errors = append(errors, er)
 		status = http.StatusBadRequest
 		return
 	}
@@ -95,7 +94,7 @@ func (a Mail) createMail(r *http.Request) (status int, payload model.Mail, error
 
 	if err != nil {
 		fmt.Println(err)
-		errors =  append(errors, a.Error(err))
+		errors = append(errors, a.Error(err))
 		status = http.StatusBadRequest
 		return
 	}
