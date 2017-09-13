@@ -2,10 +2,6 @@
     "http": {
         "port": 9999
     },
-    "storage": {
-        "driver": "sqlite3",
-        "config": "styx.sqlite"
-    },
     "queue": {
         "host": "localhost",
         "port": 5672,
@@ -19,7 +15,13 @@
         "user": "user",
         "password": "pass"
     },
-    "attachments": {
-        "path": "./temp/attachments"
+    "files": {
+        "attachmentPath": "./temp/attachments"
+    },
+    "mongoDB": {
+        "address": ["localhost:27017"],
+        "database": "styx",
+        "user": "",
+        "password": ""
     }
 }

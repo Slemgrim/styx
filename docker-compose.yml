@@ -1,0 +1,17 @@
+version: '2'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  mailcatcher:
+    image: zolweb/docker-mailcatcher
+    ports:
+      - "1025:1025"
+      - "1080:1080"
+  mongodb:
+    image: mongo
+    ports:
+        - '27017:27017'

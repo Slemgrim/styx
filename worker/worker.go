@@ -2,55 +2,48 @@ package worker
 
 import (
 	"fmt"
+	"github.com/Slemgrim/styx"
+	"github.com/Slemgrim/styx/mailer"
+	"github.com/Slemgrim/styx/model"
+	"github.com/Slemgrim/styx/queue"
+	"github.com/Slemgrim/styx/service"
+	"gopkg.in/mgo.v2"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/slemgrim/styx/mailer"
-	"github.com/slemgrim/styx/model"
-	"github.com/slemgrim/styx/queue"
-	"github.com/jinzhu/gorm"
 )
 
-// QueueWorker defines the queue specific information
-type QueueWorker struct {
-	Database        *gorm.DB
-	QueueConnection *queue.Connection
-	QueueName       string
-	Mailer          *mailer.Mailer
+type Worker struct {
+	session           *mgo.Session
+	queue             *queue.Connection
+	mailer            *mailer.Mailer
+	mailService       service.Mail
+	attachmentService service.Attachment
 }
 
-type MailConsumer struct {
-	channel chan model.Mail
-	queue.MessageCallback
-	Mailer *mailer.Mailer
-}
+func New(styx *styx.Styx) *Worker {
 
-// NewQueueWorker creates a new queue worker instance
-func NewQueueWorker(database *gorm.DB, queueConnection *queue.Connection, queueName string, mailer *mailer.Mailer) *QueueWorker {
-	return &QueueWorker{
-		database,
-		queueConnection,
-		queueName,
-		mailer,
+	worker := &Worker{
+		styx.Session,
+		styx.Queue,
+		styx.Mailer,
+		styx.MailService,
+		styx.AttachmentService,
 	}
+	return worker
 }
 
-// Start starts the worker execution
-func (worker *QueueWorker) Start() {
+func (w *Worker) Start() error {
 	signals := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
 
-	queueToSMTP := make(chan model.Mail, 20)
-
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-	channel, err := worker.QueueConnection.Channel()
+	channel, err := w.queue.Channel()
 
 	if err != nil {
-		log.Fatal(err)
-		return
+		return err
 	}
 
 	defer channel.Close()
@@ -61,32 +54,50 @@ func (worker *QueueWorker) Start() {
 		done <- true
 	}()
 
-	q, err := channel.DeclareQueue(worker.QueueName, false, false, false, false)
+	q, err := channel.DeclareQueue("mails", false, false, false, false)
 
 	if err != nil {
-		log.Fatal(err)
-		return
+		return err
 	}
 
 	channel.Prefetch(20)
-	channel.Consume(q, "styx-consumer", MailConsumer{
-		channel: queueToSMTP,
-		Mailer:  worker.Mailer,
+	channel.Consume(q, "styx-consumer", mailConsumer{
+		mailer:            w.mailer,
+		mailService:       w.mailService,
+		attachmentService: w.attachmentService,
 	})
 
-	// wait for signal
 	<-done
 	fmt.Println("worker shutdown complete")
+
+	return nil
 }
 
-func (c MailConsumer) Execute(message queue.Message) {
+func (w *Worker) Stop() {
+	//TODO
+}
+
+type mailConsumer struct {
+	mailer            *mailer.Mailer
+	mailService       service.Mail
+	attachmentService service.Attachment
+}
+
+func (c mailConsumer) Execute(message queue.Message) {
 	mail := model.Mail{}
 	message.ParseFromJSON(&mail)
 
-	err := c.Mailer.Send(mail)
+	err := c.mailer.Send(mail)
 	if err != nil {
-		fmt.Println(err)
-		//Todo what to do when a queue entry can't be sent #19
+		log.Fatal(err)
+	}
+
+	c.mailService.MarkAsSent(mail.ID)
+
+	if len(mail.Attachments) > 0 {
+		for _, attachment := range mail.Attachments {
+			c.attachmentService.MarkAsUsed(*attachment)
+		}
 	}
 
 	message.Acknowledge()

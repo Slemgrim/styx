@@ -1,59 +1,66 @@
 package model
 
-// Mail defines the mail structure
-type Mail struct {
-	ID          string   `json:"id"`
-	Context     string   `json:"context"`
-	Subject     string   `json:"subject"`
-	Clients     []Client `json:"clients"`
-	Body        Body     `json:"body"`
-	Priority    int      `json:"priority"`
-	Attachments []Attachment `json:"attachments"`
-}
-
-// ClientType defines different available mail headers associated with email addresses
-type ClientType string
-
-const (
-	CLIENT_TO ClientType = "to"
-	CLIENT_FROM ClientType = "from"
-	CLIENT_CC ClientType = "cc"
-	CLIENT_BCC ClientType = "bcc"
-	CLIENT_REPLY_TO ClientType = "reply-to"
-	CLIENT_RETURN_PATH ClientType = "return-path"
+import (
+	"time"
+	"gopkg.in/go-playground/validator.v9"
+	"github.com/badoux/checkmail"
 )
 
-// Client defines the client structure
-type Client struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Type  ClientType `json:"type"`
+type Mail struct {
+	ID         string `jsonapi:"primary,mails" gorm:"primary_key"`
+	Subject    string `jsonapi:"attr,subject" validate:"required"`
+	Body	   Body `jsonapi:"attr,body" validate:"required,dive"`
+
+	To			[]Address `jsonapi:"attr,to" validate:"required,dive,required,gte=1"`
+	Cc			[]Address `jsonapi:"attr,cc" validate:"dive"`
+	Bcc			[]Address `jsonapi:"attr,bcc" validate:"dive"`
+
+	From		Address `jsonapi:"attr,from" validate:"required"`
+	ReplyTo		Address `jsonapi:"attr,reply-to" validate:"omitempty"`
+	ReturnPath	Address `jsonapi:"attr,return-path" validate:"omitempty"`
+
+	Headers		[]Header `jsonapi:"attr,headers" validate:"dive"`
+
+	Attachments []*Attachment `jsonapi:"relation,attachments"`
+
+	CreatedAt  time.Time `jsonapi:"attr,created-at,iso8601"`
+	SentAt time.Time `jsonapi:"attr,sent-at,iso8601"`
+	DeletedAt  time.Time
 }
 
-type Attachment struct {
-	ID           string   `json:"id"`
-	OriginalName string `json:"original-name"`
-	FileName     string `json:"file-name"`
-}
-
-// Body defines the html and plain text fields
 type Body struct {
-	HTML  string `json:"html"`
 	Plain string `json:"plain"`
+	HTML string `json:"html" validate:""`
 }
 
-// GetName gets the type identifier of the resource
-func (m Mail) GetName() string {
-	return "mail"
+type Address struct {
+	Name string `json:"name"`
+	Address string `json:"address"`
 }
 
-// GetID retrieves the identifier of the mail
-func (m Mail) GetID() string {
-	return m.ID
+type Header struct {
+	Name string `json:"name" validate:"required"`
+	Value []string `json:"value"`
 }
 
-// SetID sets the identifier of the mail
-func (m *Mail) SetID(id string) error {
-	m.ID = id
-	return nil
+
+func ValidateBody(sl validator.StructLevel) {
+	body := sl.Current().Interface().(Body)
+	if len(body.HTML) == 0 && len(body.Plain) == 0 {
+		sl.ReportError(body.HTML, "HTML", "html", "htmlorplain", "")
+		sl.ReportError(body.Plain, "Plain", "plain", "htmlorplain", "")
+	}
 }
+
+func ValidateAddress(sl validator.StructLevel) {
+	address := sl.Current().Interface().(Address)
+
+	if address.Address == "" {
+		return
+	}
+
+	if err := checkmail.ValidateFormat(address.Address); err != nil {
+		sl.ReportError(address.Address, "Mail", "mail", "novalidemail", "")
+	}
+}
+

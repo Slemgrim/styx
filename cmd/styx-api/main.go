@@ -1,20 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"net/http"
 
-	"github.com/slemgrim/styx/config"
-	"github.com/slemgrim/styx/model"
-	"github.com/slemgrim/styx/queue"
-	"github.com/slemgrim/styx/resource"
-	"github.com/slemgrim/styx/storage"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"github.com/manyminds/api2go"
-	"github.com/manyminds/api2go-adapter/gingonic"
-	gin "gopkg.in/gin-gonic/gin.v1"
+	"github.com/Slemgrim/styx"
+	"github.com/Slemgrim/styx/config"
+	"github.com/Slemgrim/styx/handler"
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -24,35 +17,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db, err := gorm.Open(config.Storage.Driver, config.Storage.Config)
+	styx := styx.New(config)
+	defer styx.Close()
 
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+	aHandler := handler.Attachment{Validator: styx.Validator, Service: styx.AttachmentService}
+	uHandler := handler.Upload{Service: styx.AttachmentService}
+	mHandler := handler.Mail{Validator: styx.Validator, Service: styx.MailService}
 
-	defer db.Close()
-
-	queue, err := queue.NewConnection(config.Queue.Host, config.Queue.Port, config.Queue.Username, config.Queue.Password)
-
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	defer queue.Close()
-
-	router := gin.Default()
-	api := api2go.NewAPIWithRouting(
-		"",
-		api2go.NewStaticResolver("/"),
-		gingonic.New(router),
-	)
-
-	mailStatusStorage := storage.NewMailStatusStorage(db)
-
-	api.AddResource(model.Mail{}, resource.MailResource{&mailStatusStorage, queue, config.Queue.QueueName})
-
-	router.Run(fmt.Sprintf(":%d", config.HTTP.Port))
-
+	r := mux.NewRouter()
+	r.Handle("/attachments", aHandler).Methods("POST")
+	r.Handle("/attachments/{id}", aHandler).Methods("GET")
+	r.Handle("/upload/{id}", uHandler).Methods("PUT")
+	r.Handle("/mails", mHandler).Methods("POST")
+	r.Handle("/mails/{id}", mHandler).Methods("GET")
+	http.Handle("/", r)
+	log.Fatal(http.ListenAndServe(":"+config.HTTP.Port, nil))
 }

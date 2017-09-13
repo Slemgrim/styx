@@ -1,72 +1,56 @@
 package mailer
 
 import (
-	"fmt"
-	"github.com/slemgrim/styx/config"
-	"github.com/slemgrim/styx/model"
-	"github.com/go-gomail/gomail"
+	"bytes"
 	"errors"
-	"os"
+	"github.com/Slemgrim/gorage"
+	"github.com/Slemgrim/styx/config"
+	"github.com/Slemgrim/styx/model"
+	"github.com/go-gomail/gomail"
+	"io"
 	"time"
+	"strings"
 )
 
-//Mailer for sending mails
 type Mailer struct {
-	Dialer         *gomail.Dialer
-	AttachmentPath string
+	Dialer *gomail.Dialer
+	Store  *gorage.Gorage
 }
 
-// NewMailer creates a new mailer instance
-func NewMailer(smtpConfig config.SMTPConfig, attachmentConfig config.AttachmentConfig) *Mailer {
-	dialer := gomail.NewPlainDialer(smtpConfig.Host, smtpConfig.Port, smtpConfig.User, smtpConfig.Password)
-	return &Mailer{dialer, attachmentConfig.Path}
+// Creates a new mailer instance
+func New(smtpConfig config.SMTPConfig, store *gorage.Gorage) *Mailer {
+	dialer := gomail.NewDialer(smtpConfig.Host, smtpConfig.Port, smtpConfig.User, smtpConfig.Password)
+	return &Mailer{dialer, store}
 }
 
 // Send a mail
 func (mailer *Mailer) Send(mail model.Mail) error {
 	message := gomail.NewMessage()
-	toList := make([]string, 0)
-	ccList := make([]string, 0)
-	bccList := make([]string, 0)
-	var from string;
-	var replyTo string;
-	var returnPath string;
 
-	for _, client := range mail.Clients {
-		switch client.Type {
-		case model.CLIENT_TO:
-			toList = addClientToList(toList, client, message)
-		case model.CLIENT_CC:
-			ccList = addClientToList(toList, client, message)
-		case model.CLIENT_BCC:
-			bccList = addClientToList(toList, client, message)
-		case model.CLIENT_FROM:
-			from = setValidClient(client, message)
-		case model.CLIENT_REPLY_TO:
-			replyTo = setValidClient(client, message)
-		case model.CLIENT_RETURN_PATH:
-			returnPath = setValidClient(client, message)
-		}
+	to, err := getAddressList(mail.To, message)
+	if err != nil {
+		return err
 	}
 
-	if len(toList) == 0 &&  len(ccList) == 0 && len(bccList) == 0{
-		return errors.New("A mail needs at least on to, cc or bcc email")
-	}
-	message.SetHeader("To", toList...)
-
-	if from == "" {
-		return errors.New("From header missing")
+	cc, err := getAddressList(mail.Cc, message)
+	if err != nil {
+		return err
 	}
 
+	bcc, err := getAddressList(mail.Bcc, message)
+	if err != nil {
+		return err
+	}
+
+	from, _ := getAddress(mail.From, message)
+	replyTo, _ := getAddress(mail.ReplyTo, message)
+	returnPath, _ := getAddress(mail.ReturnPath, message)
+
+	message.SetHeader("To", to...)
 	message.SetHeader("From", from)
 
-	if len(ccList) > 0 {
-		message.SetHeader("Cc", ccList...)
-	}
-
-	if len(bccList) > 0 {
-		message.SetHeader("Bcc", bccList...)
-	}
+	message.SetHeader("Cc", cc...)
+	message.SetHeader("Bcc", bcc...)
 
 	if replyTo != "" {
 		message.SetHeader("Reply-To", replyTo)
@@ -76,14 +60,7 @@ func (mailer *Mailer) Send(mail model.Mail) error {
 		message.SetHeader("Return-Path", returnPath)
 	}
 
-	if mail.Subject == "" {
-		return errors.New("Subject is missing")
-	}
 	message.SetHeader("Subject", mail.Subject)
-
-	if mail.Body.HTML == "" && mail.Body.Plain == "" {
-		return errors.New("No body was provided")
-	}
 
 	if mail.Body.HTML != "" {
 		message.SetBody("text/html", mail.Body.HTML)
@@ -93,18 +70,15 @@ func (mailer *Mailer) Send(mail model.Mail) error {
 		message.AddAlternative("text/plain", mail.Body.Plain)
 	}
 
-	if mail.Context != "" {
-		message.SetHeader("styx-mail-context", mail.Context)
-	}
-
-	if mail.ID == "" {
-		return errors.New("Id is missing")
-	}
-
 	message.SetHeader("styx-mail-uuid", mail.ID)
 	message.SetHeader("styx-mail-date", message.FormatDate(time.Now()))
 
-	addAttachments(message, mail.Attachments, mailer)
+
+	for _, header := range mail.Headers {
+		message.SetHeader(header.Name, strings.Join(header.Value, ","))
+	}
+
+	mailer.addAttachments(message, mail.Attachments)
 
 	if err := mailer.Dialer.DialAndSend(message); err != nil {
 		return err
@@ -113,43 +87,42 @@ func (mailer *Mailer) Send(mail model.Mail) error {
 	return nil
 }
 
+func getAddressList(addressList []model.Address, message *gomail.Message) ([]string, error) {
+	list := make([]string, 0)
 
-//Format a Client to mail conform string
-func formatEmail(client model.Client, message *gomail.Message) (string, error) {
-	if client.Email == "" {
+	for _, address := range addressList {
+		email, err := getAddress(address, message)
+		if err == nil {
+			list = append(list, email)
+		}
+	}
+
+	return list, nil
+}
+
+func getAddress(address model.Address, message *gomail.Message) (string, error) {
+	if address.Address == "" {
 		return "", errors.New("Missing email")
 	}
-	return message.FormatAddress(client.Email, client.Name), nil
+
+	return message.FormatAddress(address.Address, address.Name), nil
 }
 
-func addClientToList(list []string, client model.Client, message *gomail.Message) []string {
-	email, err := formatEmail(client, message)
-	if err == nil {
-		list = append(list, email)
-	}
-
-	return list
-}
-
-func setValidClient(client model.Client, message *gomail.Message) string {
-	email, err := formatEmail(client, message)
-	if err == nil {
-		return email
-	}
-
-	return ""
-}
-
-
-func addAttachments(mail *gomail.Message, attachments []model.Attachment, mailer *Mailer) error {
+func (m *Mailer) addAttachments(mail *gomail.Message, attachments []*model.Attachment) error {
 	if len(attachments) > 0 {
 		for _, attachment := range attachments {
-			file := fmt.Sprintf("%s/%s", mailer.AttachmentPath, attachment.FileName)
-			if _, err := os.Stat(file); os.IsNotExist(err) {
-				return errors.New(fmt.Sprintf("File '%s' doesn't exist", file))
-			}
 			attachmentIdHeader := map[string][]string{"styx-attachment-uuid": {attachment.ID}}
-			mail.Attach(file, gomail.Rename(attachment.OriginalName), gomail.SetHeader(attachmentIdHeader))
+			f, err := m.Store.Load(attachment.FileId)
+
+			if err != nil {
+				return err
+			}
+
+			r := bytes.NewBuffer(f.Content)
+			mail.Attach(attachment.FileName, gomail.SetCopyFunc(func(w io.Writer) error {
+				_, err := io.Copy(w, r)
+				return err
+			}), gomail.Rename(attachment.FileName), gomail.SetHeader(attachmentIdHeader))
 		}
 	}
 	return nil

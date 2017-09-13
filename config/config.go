@@ -8,21 +8,15 @@ import (
 // Config defines the application configuration
 type Config struct {
 	HTTP    HTTPConfig
-	Storage StorageConfig
+	MongoDB MongoDBConfig
 	Queue   QueueConfig
 	SMTP    SMTPConfig
-	Attachments AttachmentConfig
+	Files   FilesConfig
 }
 
 // HTTPConfig defines the configuration for the http api
 type HTTPConfig struct {
 	Port int
-}
-
-// StorageConfig defines the database storage information
-type StorageConfig struct {
-	Driver string
-	Config string
 }
 
 // QueueConfig defines the rabbit mq connection information
@@ -36,15 +30,22 @@ type QueueConfig struct {
 
 // SMTPConfig defines the SMTP server settings
 type SMTPConfig struct {
-	Host string
-	Port int
+	Host     string
+	Port     int
 	Identity string
-	User string
+	User     string
 	Password string
 }
 
-type AttachmentConfig struct {
-	Path string
+type FilesConfig struct {
+	AttachmentPath string
+}
+
+type MongoDBConfig struct {
+	Address  []string
+	Database string
+	User     string
+	Password string
 }
 
 // ReadConfig reads the json configuration values into the Config Struct
