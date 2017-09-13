@@ -9,6 +9,7 @@ import (
 	"github.com/go-gomail/gomail"
 	"io"
 	"time"
+	"strings"
 )
 
 type Mailer struct {
@@ -71,6 +72,11 @@ func (mailer *Mailer) Send(mail model.Mail) error {
 
 	message.SetHeader("styx-mail-uuid", mail.ID)
 	message.SetHeader("styx-mail-date", message.FormatDate(time.Now()))
+
+
+	for _, header := range mail.Headers {
+		message.SetHeader(header.Name, strings.Join(header.Value, ","))
+	}
 
 	mailer.addAttachments(message, mail.Attachments)
 

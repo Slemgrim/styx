@@ -49,6 +49,8 @@ func (u Upload) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		respondError(w, err)
 		return
 	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func respondError(w http.ResponseWriter, err error) {
