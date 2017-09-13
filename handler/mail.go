@@ -30,7 +30,7 @@ func (a Mail) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	status := http.StatusOK
+	var status int
 	var err error
 	var payload model.Mail
 
@@ -57,6 +57,7 @@ func (a Mail) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a Mail) getMail(r *http.Request) (status int, payload model.Mail, errors []*jsonapi.ErrorObject) {
+	status = http.StatusOK
 	vars := mux.Vars(r)
 	id := vars["id"]
 
@@ -74,7 +75,7 @@ func (a Mail) getMail(r *http.Request) (status int, payload model.Mail, errors [
 }
 
 func (a Mail) createMail(r *http.Request) (status int, payload model.Mail, errors []*jsonapi.ErrorObject) {
-
+	status = http.StatusOK
 	mail := new(model.Mail)
 	if er := a.Unmarshal(r.Body, mail); er != nil {
 		errors =  append(errors, er)

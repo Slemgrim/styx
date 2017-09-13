@@ -28,7 +28,7 @@ func (a Attachment) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	status := http.StatusOK
+	var status int
 	var err error
 	var payload model.Attachment
 
@@ -55,6 +55,7 @@ func (a Attachment) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a Attachment) getAttachment(r *http.Request) (status int, payload model.Attachment, errors []*jsonapi.ErrorObject) {
+	status = http.StatusOK
 	vars := mux.Vars(r)
 	id := vars["id"]
 
@@ -72,7 +73,7 @@ func (a Attachment) getAttachment(r *http.Request) (status int, payload model.At
 }
 
 func (a Attachment) createAttachment(r *http.Request) (status int, payload model.Attachment, errors []*jsonapi.ErrorObject) {
-
+	status = http.StatusOK
 	attachment := new(model.Attachment)
 	if er := a.Unmarshal(r.Body, attachment); er != nil {
 		errors =  append(errors, er)
